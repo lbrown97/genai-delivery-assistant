@@ -47,7 +47,7 @@ lint:
 	ruff check .
 
 test:
-	pytest -q
+	PYTHONPATH=. pytest -q
 
 prompt-test:
 	docker compose exec api npx --yes promptfoo eval
