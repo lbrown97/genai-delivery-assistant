@@ -1,0 +1,9 @@
+{"question":"In the OWASP Top 10 for LLM Applications 2025, what is LLM01?","ground_truth":"Prompt Injection."}
+{"question":"Name two items from the OWASP Top 10 for LLM Applications 2025 list.","ground_truth":"Sensitive Information Disclosure and Supply Chain."}
+{"question":"What is LLM06 in the OWASP Top 10 for LLM Applications 2025?","ground_truth":"Excessive Agency."}
+{"question":"What are the four core functions of the NIST AI Risk Management Framework (AI RMF 1.0)?","ground_truth":"Govern, Map, Measure, and Manage."}
+{"question":"How does the NIST AI RMF describe itself as a document?","ground_truth":"It is intended to be a living document."}
+{"question":"According to the AI RMF, why is AI risk management important?","ground_truth":"It helps enhance trustworthiness and cultivate public trust by understanding and managing AI risks."}
+{"question":"In the SRE capacity management document, what should you determine about demand?","ground_truth":"Expected user count and traffic, where the user base is located, and usage patterns."}
+{"question":"What growth types are mentioned in the SRE capacity management document?","ground_truth":"Organic growth and inorganic growth."}
+{"question":"What is a key consideration related to scaling in the SRE capacity management document?","ground_truth":"Understand how the service scales when increasing resource allocations."}

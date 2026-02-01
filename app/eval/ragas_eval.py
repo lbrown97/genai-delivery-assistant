@@ -17,16 +17,25 @@ from app.rag.embeddings import get_embedding_model
 from app.rag.retriever import get_retriever
 
 DATASET_PATH = Path("app/eval/datasets/questions.jsonl")
+PDF_DATASET_PATH = Path("app/eval/datasets/pdf_questions.jsonl")
 OUT_PATH = Path("app/eval/results.json")
 
 
 def _load_questions(path: Path) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
+    if not path.exists():
+        return rows
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
             continue
         rows.append(json.loads(line))
+    return rows
+
+
+def _load_all_questions() -> List[Dict[str, Any]]:
+    rows = _load_questions(DATASET_PATH)
+    rows.extend(_load_questions(PDF_DATASET_PATH))
     return rows
 
 
@@ -59,7 +68,7 @@ def _build_ragas_embeddings():
 
 
 def build_dataset(k: int = 3) -> Dataset:
-    rows = _load_questions(DATASET_PATH)
+    rows = _load_all_questions()
     retriever = get_retriever(k=k)
 
     records: Dict[str, List[Any]] = {

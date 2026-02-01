@@ -117,6 +117,7 @@ Examples and FAQ
 ----------------
 - Examples: `docs/examples/`
 - Demo FAQ: `docs/demo_faq.md`
+- Demo questions: `docs/demo_questions.md`
 
 Notes
 -----
