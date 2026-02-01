@@ -1,6 +1,11 @@
-import os
 import logging
+import os
 from typing import Any, Type
+
+_PRESIDIO_LOGGERS = ["presidio-analyzer", "presidio_analyzer"]
+for _name in _PRESIDIO_LOGGERS:
+    logging.getLogger(_name).setLevel(logging.WARNING)
+
 
 def groundedness_with_scores(
     docs,
@@ -36,13 +41,22 @@ def redact_pii(text: str) -> str:
         return text
 
     try:
-        from presidio_analyzer import AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern
+        from presidio_analyzer import (
+            AnalyzerEngine,
+            Pattern,
+            PatternRecognizer,
+            RecognizerRegistry,
+        )
         from presidio_anonymizer import AnonymizerEngine
     except Exception:
         return text
 
     analyzer, anonymizer = _get_presidio_engines(
-        AnalyzerEngine, AnonymizerEngine, RecognizerRegistry, PatternRecognizer, Pattern
+        AnalyzerEngine,
+        AnonymizerEngine,
+        RecognizerRegistry,
+        PatternRecognizer,
+        Pattern,
     )
     results = analyzer.analyze(text=text, language="en")
     if not results:
@@ -65,12 +79,16 @@ def redact_pii_any(value: Any) -> Any:
 
 _PRESIDIO_CACHE: dict[str, Any] = {"analyzer": None, "anonymizer": None}
 
-def _get_presidio_engines(AnalyzerEngine, AnonymizerEngine, RecognizerRegistry, PatternRecognizer, Pattern):
+
+def _get_presidio_engines(
+    AnalyzerEngine,
+    AnonymizerEngine,
+    RecognizerRegistry,
+    PatternRecognizer,
+    Pattern,
+):
     if _PRESIDIO_CACHE["analyzer"] and _PRESIDIO_CACHE["anonymizer"]:
         return _PRESIDIO_CACHE["analyzer"], _PRESIDIO_CACHE["anonymizer"]
-    
-    # Reduce log noise; Presidio is chatty on init.
-    logging.getLogger("presidio-analyzer").setLevel(logging.WARNING)
 
     registry = RecognizerRegistry()
     email_pattern = Pattern(

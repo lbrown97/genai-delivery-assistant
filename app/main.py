@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Request
 import os
-import requests
+
+from fastapi import FastAPI, Request
+from langfuse import Langfuse
 from pydantic import BaseModel
+import requests
+
+from app.agent.router import agent_route
 from app.core.logging import setup_logging
 from app.rag.ingest import ingest
-from app.rag.retriever import set_retrieval_mode_override, clear_retrieval_mode_override
-from app.agent.router import agent_route
+from app.rag.retriever import clear_retrieval_mode_override, set_retrieval_mode_override
 
 setup_logging()
 app = FastAPI(title="GenAI Delivery Assistant")
@@ -62,9 +65,6 @@ def agent(req: AskRequest, request: Request):
 
 @app.get("/debug/langfuse")
 def debug_langfuse():
-    import os
-    from langfuse import Langfuse
-
     pk = os.getenv("LANGFUSE_PUBLIC_KEY")
     sk = os.getenv("LANGFUSE_SECRET_KEY")
     host = os.getenv("LANGFUSE_HOST")

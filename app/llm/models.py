@@ -1,5 +1,7 @@
 from langchain_ollama import ChatOllama
+
 from app.core.settings import settings
+
 
 def get_chat_model(temperature: float = 0.2):
     return ChatOllama(

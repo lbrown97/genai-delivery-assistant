@@ -1,11 +1,17 @@
 import json
 from pathlib import Path
 
-from app.llm.models import get_chat_model
-from app.agent.schemas import ADR, SolutionOutline, UserStories, RiskAssessment, ToolCall
-from app.agent.guardrails import groundedness_with_scores, redact_pii, redact_pii_any, parse_with_guardrails, validate_citations
+from app.agent.guardrails import (
+    groundedness_with_scores,
+    parse_with_guardrails,
+    redact_pii,
+    redact_pii_any,
+    validate_citations,
+)
+from app.agent.schemas import ADR, RiskAssessment, SolutionOutline, ToolCall, UserStories
 from app.agent.tools import retrieve_context_with_scores
 from app.core.observability import get_langfuse_handler
+from app.llm.models import get_chat_model
 
 PROMPTS_DIR = Path("app/llm/prompts")
 
@@ -62,7 +68,13 @@ def answer_question(question: str, agent_meta: dict | None = None):
     r = retrieve_context_with_scores(question)
     docs = r["docs"]
 
-    if not groundedness_with_scores(docs, r.get("scores"), min_docs=1, min_unique_sources=1, min_score=0.25):
+    if not groundedness_with_scores(
+        docs,
+        r.get("scores"),
+        min_docs=1,
+        min_unique_sources=1,
+        min_score=0.25,
+    ):
         return _wrap_response(
             agent_tool="ask",
             agent_args={"question": safe_question},
@@ -96,14 +108,25 @@ def answer_question(question: str, agent_meta: dict | None = None):
         answer=msg.content,
     )
 
-def generate_adr(decision: str, alternatives: list[str], question_for_context: str, agent_meta: dict | None = None):
+def generate_adr(
+    decision: str,
+    alternatives: list[str],
+    question_for_context: str,
+    agent_meta: dict | None = None,
+):
     safe_decision = redact_pii(decision)
     safe_alternatives = [redact_pii(a) for a in alternatives]
     safe_context_query = redact_pii(question_for_context)
     r = retrieve_context_with_scores(question_for_context)
     docs = r["docs"]
 
-    if not groundedness_with_scores(docs, r.get("scores"), min_docs=2, min_unique_sources=1, min_score=0.25):
+    if not groundedness_with_scores(
+        docs,
+        r.get("scores"),
+        min_docs=2,
+        min_unique_sources=1,
+        min_score=0.25,
+    ):
         return _wrap_response(
             agent_tool="adr",
             agent_args={
@@ -152,7 +175,13 @@ def generate_solution_outline(request: str, context_query: str, agent_meta: dict
     r = retrieve_context_with_scores(context_query)
     docs = r["docs"]
 
-    if not groundedness_with_scores(docs, r.get("scores"), min_docs=2, min_unique_sources=1, min_score=0.25):
+    if not groundedness_with_scores(
+        docs,
+        r.get("scores"),
+        min_docs=2,
+        min_unique_sources=1,
+        min_score=0.25,
+    ):
         return _wrap_response(
             agent_tool="solution_outline",
             agent_args={"request": safe_request, "context_query": safe_context_query},
@@ -192,7 +221,13 @@ def generate_user_stories(request: str, context_query: str, agent_meta: dict | N
     r = retrieve_context_with_scores(context_query)
     docs = r["docs"]
 
-    if not groundedness_with_scores(docs, r.get("scores"), min_docs=1, min_unique_sources=1, min_score=0.25):
+    if not groundedness_with_scores(
+        docs,
+        r.get("scores"),
+        min_docs=1,
+        min_unique_sources=1,
+        min_score=0.25,
+    ):
         return _wrap_response(
             agent_tool="user_stories",
             agent_args={"request": safe_request, "context_query": safe_context_query},
@@ -232,7 +267,13 @@ def generate_risk_assessment(request: str, context_query: str, agent_meta: dict 
     r = retrieve_context_with_scores(context_query)
     docs = r["docs"]
 
-    if not groundedness_with_scores(docs, r.get("scores"), min_docs=1, min_unique_sources=1, min_score=0.25):
+    if not groundedness_with_scores(
+        docs,
+        r.get("scores"),
+        min_docs=1,
+        min_unique_sources=1,
+        min_score=0.25,
+    ):
         return _wrap_response(
             agent_tool="risk_assessment",
             agent_args={"request": safe_request, "context_query": safe_context_query},

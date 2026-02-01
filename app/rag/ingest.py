@@ -1,8 +1,10 @@
 import os
 from pathlib import Path
+
 from langchain_core.documents import Document
-from app.rag.chunking import split_documents
+
 from app.agent.guardrails import redact_pii
+from app.rag.chunking import split_documents
 from app.rag.retriever import get_vectorstore
 
 SUPPORTED = {".md", ".txt", ".pdf"}

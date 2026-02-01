@@ -1,4 +1,5 @@
 import os
+
 import requests
 import streamlit as st
 
@@ -18,7 +19,12 @@ with col1:
 
 with col2:
     st.subheader("Ask Agent")
-    mode = st.selectbox("Retrieval mode", RETRIEVAL_OPTIONS, index=0, help="Controls how context is retrieved.")
+    mode = st.selectbox(
+        "Retrieval mode",
+        RETRIEVAL_OPTIONS,
+        index=0,
+        help="Controls how context is retrieved.",
+    )
     q = st.text_area(
         "Request",
         value="Create a solution outline including architecture, risks, and assumptions.",
@@ -54,8 +60,14 @@ if use_structured:
         )
 
     if use_case == "ADR":
-        decision = st.text_input("Decision", value="Use Qdrant as vector database for RAG retrieval")
-        alternatives = st.text_input("Alternatives (comma separated)", value="FAISS, Chroma, Elasticsearch")
+            decision = st.text_input(
+                "Decision",
+                value="Use Qdrant as vector database for RAG retrieval",
+            )
+            alternatives = st.text_input(
+                "Alternatives (comma separated)",
+                value="FAISS, Chroma, Elasticsearch",
+            )
         structured_prompt = (
             "Create an ADR.\n"
             f"Decision: {decision}\n"

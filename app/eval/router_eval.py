@@ -1,14 +1,15 @@
 import json
 from pathlib import Path
 
+from app.agent.router import SYSTEM, _read_prompt
 from app.agent.schemas import ToolCall
 from app.llm.models import get_chat_model
-from app.agent.router import _read_prompt, SYSTEM
 
 DATASET_PATH = Path("app/eval/datasets/router_eval.jsonl")
 OUT_PATH = Path("app/eval/router_eval_results.json")
 
 ROUTER_PROMPT = _read_prompt("tool_router.md")
+
 
 def _load_rows():
     rows = []
@@ -18,6 +19,7 @@ def _load_rows():
             continue
         rows.append(json.loads(line))
     return rows
+
 
 def run_eval():
     rows = _load_rows()

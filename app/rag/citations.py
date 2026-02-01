@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 def format_context(docs) -> str:
     # docs are LangChain Documents

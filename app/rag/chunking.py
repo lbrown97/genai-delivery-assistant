@@ -1,4 +1,5 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+
 
 def _recursive_splitter():
     return RecursiveCharacterTextSplitter(
@@ -7,11 +8,13 @@ def _recursive_splitter():
         separators=["\n\n", "\n", " ", ""],
     )
 
+
 def _markdown_splitter():
     return MarkdownHeaderTextSplitter(
         headers_to_split_on=[("#", "h1"), ("##", "h2"), ("###", "h3")],
         strip_headers=False,
     )
+
 
 def split_documents(docs):
     """

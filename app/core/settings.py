@@ -13,4 +13,5 @@ class Settings(BaseSettings):
 
     APP_ENV: str = "local"
 
+
 settings = Settings()

@@ -5,16 +5,15 @@ from typing import Any, Dict, List
 
 from datasets import Dataset
 from ragas import evaluate
-from ragas.metrics._faithfulness import faithfulness
+from ragas.llms import llm_factory
 from ragas.metrics._answer_relevance import answer_relevancy
 from ragas.metrics._context_precision import context_precision
 from ragas.metrics._context_recall import context_recall
-from ragas.llms import llm_factory
+from ragas.metrics._faithfulness import faithfulness
 
 from app.core.settings import settings
 from app.llm.models import get_chat_model
 from app.rag.retriever import get_retriever
-from app.rag.embeddings import get_embedding_model
 
 DATASET_PATH = Path("app/eval/datasets/questions.jsonl")
 OUT_PATH = Path("app/eval/results.json")

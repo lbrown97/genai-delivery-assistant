@@ -1,9 +1,10 @@
+import contextvars
 import os
 import re
-import contextvars
+
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance
 from langchain_qdrant import QdrantVectorStore
+from qdrant_client.models import Distance, VectorParams
 from app.core.settings import settings
 from app.rag.embeddings import get_embedding_model
 

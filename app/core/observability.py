@@ -1,8 +1,9 @@
-import os
 import logging
-from typing import Optional, Any
+import os
+from typing import Any, Optional
 
 log = logging.getLogger(__name__)
+
 
 def get_langfuse_handler() -> Optional[Any]:
     """
