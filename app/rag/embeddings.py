@@ -9,11 +9,13 @@ def _pick_device() -> str:
         return env
     try:
         import torch
+
         if torch.cuda.is_available():
             return "cuda"
     except Exception:
         pass
     return "cpu"
+
 
 def get_embedding_model():
     # English-optimized embeddings

@@ -9,6 +9,7 @@ from app.rag.retriever import get_vectorstore
 
 SUPPORTED = {".md", ".txt", ".pdf"}
 
+
 def load_documents(data_dir: str) -> list[Document]:
     docs = []
     base = Path(data_dir)
@@ -18,6 +19,7 @@ def load_documents(data_dir: str) -> list[Document]:
             if p.suffix.lower() == ".pdf":
                 try:
                     from pypdf import PdfReader
+
                     reader = PdfReader(str(p))
                     for i, page in enumerate(reader.pages, start=1):
                         text = page.extract_text() or ""
@@ -42,6 +44,7 @@ def load_documents(data_dir: str) -> list[Document]:
                 )
     return docs
 
+
 def ingest(data_dir: str = "data"):
     raw_docs = load_documents(data_dir)
     if not raw_docs:
@@ -53,6 +56,7 @@ def ingest(data_dir: str = "data"):
     vs.add_documents(chunks)
 
     return {"status": "ok", "raw_docs": len(raw_docs), "chunks": len(chunks)}
+
 
 if __name__ == "__main__":
     print(ingest(os.getenv("DATA_DIR", "data")))

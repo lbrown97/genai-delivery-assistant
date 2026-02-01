@@ -20,6 +20,7 @@ def get_langfuse_handler() -> Optional[Any]:
     try:
         # Langfuse v3: CallbackHandler reads auth/host from env.
         from langfuse.langchain import CallbackHandler
+
         return CallbackHandler()
     except Exception as e:
         log.warning("Langfuse disabled (import/init failed): %s", e)

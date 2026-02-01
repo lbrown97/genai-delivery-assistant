@@ -13,17 +13,21 @@ from app.rag.retriever import clear_retrieval_mode_override, set_retrieval_mode_
 setup_logging()
 app = FastAPI(title="GenAI Delivery Assistant")
 
+
 class AskRequest(BaseModel):
     question: str
+
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+
 def _check_required_env():
     required = ["OLLAMA_BASE_URL", "QDRANT_URL"]
     missing = [k for k in required if not os.getenv(k)]
     return missing
+
 
 @app.get("/ready")
 def ready():
@@ -48,9 +52,11 @@ def ready():
     ready_ok = not missing and checks["ollama"] and checks["qdrant"]
     return {"ready": ready_ok, "checks": checks}
 
+
 @app.post("/ingest")
 def ingest_docs():
     return ingest("data")
+
 
 @app.post("/agent")
 def agent(req: AskRequest, request: Request):
@@ -62,6 +68,7 @@ def agent(req: AskRequest, request: Request):
     finally:
         if mode:
             clear_retrieval_mode_override()
+
 
 @app.get("/debug/langfuse")
 def debug_langfuse():

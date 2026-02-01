@@ -123,15 +123,11 @@ def _get_presidio_engines(
     registry.add_recognizer(
         PatternRecognizer(supported_entity="PHONE_NUMBER", patterns=[phone_pattern])
     )
-    registry.add_recognizer(
-        PatternRecognizer(supported_entity="IP_ADDRESS", patterns=[ip_pattern])
-    )
+    registry.add_recognizer(PatternRecognizer(supported_entity="IP_ADDRESS", patterns=[ip_pattern]))
     registry.add_recognizer(
         PatternRecognizer(supported_entity="API_KEY", patterns=[api_key_pattern])
     )
-    registry.add_recognizer(
-        PatternRecognizer(supported_entity="IBAN", patterns=[iban_pattern])
-    )
+    registry.add_recognizer(PatternRecognizer(supported_entity="IBAN", patterns=[iban_pattern]))
 
     analyzer = AnalyzerEngine(registry=registry, supported_languages=["en"])
     anonymizer = AnonymizerEngine()
@@ -176,6 +172,7 @@ def validate_citations(text: str, allowed_source_ids: set[str] | None = None) ->
     Minimal citation format check: require at least one [source_id]-style token.
     """
     import re
+
     matches = re.findall(r"\[([^\[\]\n]{1,100})\]", text)
     if not matches:
         return False

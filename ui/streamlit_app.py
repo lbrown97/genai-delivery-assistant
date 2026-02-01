@@ -81,9 +81,7 @@ if use_structured:
                 height=100,
             )
             structured_prompt = (
-                "Create a solution outline.\n"
-                f"Request: {request}\n"
-                f"Context query: {context_query}\n"
+                f"Create a solution outline.\nRequest: {request}\nContext query: {context_query}\n"
             )
         elif use_case == "User Stories":
             request = st.text_area(
@@ -103,9 +101,7 @@ if use_structured:
                 height=100,
             )
             structured_prompt = (
-                "Create a risk assessment.\n"
-                f"Request: {request}\n"
-                f"Context query: {context_query}\n"
+                f"Create a risk assessment.\nRequest: {request}\nContext query: {context_query}\n"
             )
 
     with st.expander("Show generated prompt", expanded=False):

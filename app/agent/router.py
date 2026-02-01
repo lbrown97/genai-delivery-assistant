@@ -15,8 +15,10 @@ from app.llm.models import get_chat_model
 
 PROMPTS_DIR = Path("app/llm/prompts")
 
+
 def _read_prompt(name: str) -> str:
     return (PROMPTS_DIR / name).read_text(encoding="utf-8")
+
 
 SYSTEM = _read_prompt("system.md")
 ANSWER = _read_prompt("answer_with_citations.md")
@@ -25,6 +27,7 @@ SOLUTION_PROMPT = _read_prompt("solution_outline.md")
 STORIES_PROMPT = _read_prompt("user_stories.md")
 RISK_PROMPT = _read_prompt("risk_assessment.md")
 ROUTER_PROMPT = _read_prompt("tool_router.md")
+
 
 def _lf_config(tags: list[str], metadata: dict, extra_meta: dict | None = None):
     handler = get_langfuse_handler()
@@ -37,6 +40,7 @@ def _lf_config(tags: list[str], metadata: dict, extra_meta: dict | None = None):
         "tags": tags,
         "metadata": metadata,
     }
+
 
 def _wrap_response(
     *,
@@ -62,6 +66,7 @@ def _wrap_response(
     if message:
         payload["message"] = message
     return payload
+
 
 def answer_question(question: str, agent_meta: dict | None = None):
     safe_question = redact_pii(question)
@@ -107,6 +112,7 @@ def answer_question(question: str, agent_meta: dict | None = None):
         sources=r["sources"],
         answer=msg.content,
     )
+
 
 def generate_adr(
     decision: str,
@@ -169,6 +175,7 @@ def generate_adr(
         structured=adr.model_dump(),
     )
 
+
 def generate_solution_outline(request: str, context_query: str, agent_meta: dict | None = None):
     safe_request = redact_pii(request)
     safe_context_query = redact_pii(context_query)
@@ -214,6 +221,7 @@ def generate_solution_outline(request: str, context_query: str, agent_meta: dict
         sources=r["sources"],
         structured=outline.model_dump(),
     )
+
 
 def generate_user_stories(request: str, context_query: str, agent_meta: dict | None = None):
     safe_request = redact_pii(request)
@@ -261,6 +269,7 @@ def generate_user_stories(request: str, context_query: str, agent_meta: dict | N
         structured=stories.model_dump(),
     )
 
+
 def generate_risk_assessment(request: str, context_query: str, agent_meta: dict | None = None):
     safe_request = redact_pii(request)
     safe_context_query = redact_pii(context_query)
@@ -306,6 +315,7 @@ def generate_risk_assessment(request: str, context_query: str, agent_meta: dict 
         sources=r["sources"],
         structured=risk.model_dump(),
     )
+
 
 def agent_route(question: str):
     # Route to best tool using a deterministic call

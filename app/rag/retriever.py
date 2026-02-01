@@ -25,14 +25,17 @@ def get_vectorstore():
         embedding=embeddings,
     )
 
+
 def _mode() -> str:
     override = _retrieval_mode_override.get()
     if override:
         return override.strip().lower()
     return os.getenv("RETRIEVAL_MODE", "mmr").strip().lower()
 
+
 def _tokenize(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]{2,}", text.lower()))
+
 
 def get_retriever(k: int = 6):
     vs = get_vectorstore()
@@ -45,6 +48,7 @@ def get_retriever(k: int = 6):
             search_kwargs={"k": k, "fetch_k": fetch_k, "lambda_mult": lambda_mult},
         )
     return vs.as_retriever(search_kwargs={"k": k})
+
 
 def get_retriever_with_scores(query: str, k: int = 6):
     vs = get_vectorstore()
@@ -75,12 +79,16 @@ def get_retriever_with_scores(query: str, k: int = 6):
         return ranked[:k]
 
     return vs.similarity_search_with_score(query, k=k)
+
+
 _retrieval_mode_override: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "retrieval_mode_override", default=None
 )
 
+
 def set_retrieval_mode_override(mode: str | None):
     _retrieval_mode_override.set(mode)
+
 
 def clear_retrieval_mode_override():
     _retrieval_mode_override.set(None)
