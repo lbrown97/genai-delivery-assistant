@@ -1,0 +1,10 @@
+{"question":"Create an ADR about vector database selection.","expected_tool":"adr"}
+{"question":"Write an architecture decision record for using Qdrant.","expected_tool":"adr"}
+{"question":"Create a solution outline including architecture, risks, and assumptions.","expected_tool":"solution_outline"}
+{"question":"Provide a solution outline for the GenAI assistant deployment.","expected_tool":"solution_outline"}
+{"question":"Generate user stories and acceptance criteria for incident handling.","expected_tool":"user_stories"}
+{"question":"Write user stories for production access workflow.","expected_tool":"user_stories"}
+{"question":"Create a risk assessment and mitigations for the project.","expected_tool":"risk_assessment"}
+{"question":"List project risks with mitigations based on security policy.","expected_tool":"risk_assessment"}
+{"question":"What are the security assumptions for this project? Answer with citations.","expected_tool":"ask"}
+{"question":"Summarize the backup policy with sources.","expected_tool":"ask"}

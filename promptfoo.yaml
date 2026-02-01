@@ -1,0 +1,33 @@
+prompts:
+  - "Answer with citations. Question: {{question}}\nContext:\n{{context}}"
+
+providers:
+  - id: openai:chat
+    config:
+      baseUrl: http://localhost:11434/v1
+      apiKey: ollama
+      model: qwen2.5:14b-instruct
+
+tests:
+  - vars:
+      question: "What are the backup requirements?"
+      context: |
+        [runbook_backup.md] Snapshots run daily at 02:00 UTC. Retention policy: 30 days.
+    assert:
+      - type: contains
+        value: "daily"
+      - type: contains
+        value: "30 days"
+      - type: regex
+        value: "\\[runbook_backup.md\\]"
+  - vars:
+      question: "Who can access production systems?"
+      context: |
+        [runbook_access.md] Production access is restricted to on-call engineers. MFA is mandatory.
+    assert:
+      - type: contains
+        value: "on-call"
+      - type: contains
+        value: "MFA"
+      - type: regex
+        value: "\\[runbook_access.md\\]"

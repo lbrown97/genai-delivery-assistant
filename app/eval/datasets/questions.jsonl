@@ -1,0 +1,42 @@
+{"question":"What security assumptions apply to this project?","ground_truth":"No PII in logs; secrets in a vault; databases only in private subnets with no public access."}
+{"question":"How are backups handled in operations?","ground_truth":"Daily snapshots with 30 days retention."}
+{"question":"Who is allowed production access?","ground_truth":"Only on-call engineers with MFA."}
+{"question":"What observability requirements are described?","ground_truth":"Tracing of retrieval and generation steps."}
+{"question":"What requirements are stated for the vector DB?","ground_truth":"Persistence, snapshots, and easy Docker operations."}
+{"question":"How must incidents be documented?","ground_truth":"In Jira with severity and timestamps."}
+{"question":"What is the scope of the POC project?","ground_truth":"Deliver a GenAI Delivery Assistant that supports retrieval from project artifacts and structured outputs for ADRs, user stories, and risk assessments."}
+{"question":"What are the non-goals of the POC?","ground_truth":"No production data ingestion and no paid external LLM APIs."}
+{"question":"What are the acceptance criteria for the POC?","ground_truth":"Answer with citations or 'I don't know', support PDF/Markdown/TXT ingestion, and report basic evaluation metrics."}
+{"question":"Which vector database was selected and why?","ground_truth":"Qdrant was selected for persistence, snapshots, and a stable API with simple Docker operations."}
+{"question":"Which embedding model was selected?","ground_truth":"BAAI/bge-small-en-v1.5."}
+{"question":"What guardrails approach is used?","ground_truth":"GuardrailsAI for schema validation and Presidio for PII redaction."}
+{"question":"What is the backup schedule?","ground_truth":"Daily snapshots at 02:00 UTC with 30 days retention."}
+{"question":"How often is restore testing required?","ground_truth":"Monthly."}
+{"question":"Who can access production systems?","ground_truth":"Only on-call engineers with MFA and service owner approval."}
+{"question":"What is the incident severity classification?","ground_truth":"Sev-1 critical, Sev-2 high, Sev-3 medium."}
+{"question":"When must incidents be logged?","ground_truth":"Within 24 hours."}
+{"question":"What are the availability and latency SLOs?","ground_truth":"99.5% availability, P95 <= 4s, P99 <= 8s for /agent."}
+{"question":"What change management rules apply?","ground_truth":"Tickets and peer review required, emergency changes documented within 24 hours, and rollback plans required."}
+{"question":"Which observability tool is used for tracing?","ground_truth":"Langfuse is used for tracing and prompt management."}
+{"question":"What is the default retrieval strategy?","ground_truth":"MMR is the default retrieval strategy."}
+{"question":"Is hybrid retrieval supported?","ground_truth":"Yes, hybrid retrieval is supported as a demo option."}
+{"question":"How are PDFs ingested?","ground_truth":"PDFs are ingested with pypdf and indexed per page."}
+{"question":"What must be recorded for /agent requests?","ground_truth":"A trace including retrieval mode, tool chosen, and latency."}
+{"question":"What are the log and trace retention periods?","ground_truth":"Logs retained for 30 days and traces retained for 14 days."}
+{"question":"What is the access control principle for systems?","ground_truth":"Principle of least privilege."}
+{"question":"How often are access reviews performed?","ground_truth":"Quarterly."}
+{"question":"How is the data flow described at a high level?","ground_truth":"User calls /agent, router selects tool and retrieves context, LLM generates response and returns structured output."}
+{"question":"What are the Ops KPIs?","ground_truth":"Daily ingestion success >= 99%, retrieval timeout <= 1%, agent error <= 2%."}
+{"question":"What is the standard Jira story format?","ground_truth":"As a <role>, I want <goal>, so that <benefit>."}
+{"question":"What does the Confluence ADR template include?","ground_truth":"Title, context, decision, alternatives, consequences."}
+{"question":"What are the support SLA response times?","ground_truth":"Sev-1: 15 minutes, Sev-2: 1 hour, Sev-3: 1 business day."}
+{"question":"Why are prompts stored in files?","ground_truth":"To make prompt changes versioned, diffable, and reviewable."}
+{"question":"When should the system refuse a response?","ground_truth":"When citations are missing or context is insufficient."}
+{"question":"What deployment strategy is recommended?","ground_truth":"Use blue/green when possible with a documented rollback plan."}
+{"question":"What must be validated after ingestion?","ground_truth":"PDF parsing should produce non-empty text and ingestion stats should be recorded."}
+{"question":"What must security logging exclude?","ground_truth":"PII."}
+{"question":"Where are vector embeddings stored?","ground_truth":"In Qdrant."}
+{"question":"Where are raw artifacts stored in the demo?","ground_truth":"In the project data directory."}
+{"question":"What should ops monitoring track?","ground_truth":"CPU, memory, GPU utilization, and service health for Qdrant and Ollama."}
+{"question":"What is the primary cost of this POC?","ground_truth":"Hardware and time since the LLM runs locally."}
+{"question":"What is required for team onboarding access?","ground_truth":"Security training and manager approval."}

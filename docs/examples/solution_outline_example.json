@@ -1,0 +1,19 @@
+{
+  "title": "Solution Outline: GenAI Delivery Assistant",
+  "summary": "Provide an internal assistant that answers delivery questions and produces structured artifacts.",
+  "architecture": [
+    "FastAPI API for /agent",
+    "Qdrant for vector search",
+    "Ollama for local LLM",
+    "Langfuse for tracing"
+  ],
+  "risks": [
+    "PDF extraction quality may vary",
+    "Retrieval may return irrelevant chunks"
+  ],
+  "assumptions": [
+    "Artifacts are English and curated",
+    "Local hardware is available for the demo"
+  ],
+  "sources": ["architecture_overview.md", "sow_excerpt.md"]
+}

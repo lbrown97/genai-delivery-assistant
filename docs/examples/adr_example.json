@@ -1,0 +1,11 @@
+{
+  "title": "ADR: Vector Database Selection",
+  "context": "The RAG system requires persistence and backups. Operations should be simple via Docker.",
+  "decision": "Use Qdrant as the vector database.",
+  "alternatives": ["FAISS", "Chroma", "Elasticsearch"],
+  "consequences": [
+    "Qdrant provides snapshots and a stable API.",
+    "Requires a running service container."
+  ],
+  "sources": ["adr_vector_db.md"]
+}

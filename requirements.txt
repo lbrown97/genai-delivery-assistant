@@ -1,0 +1,43 @@
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+
+pydantic==2.12.5
+pydantic-settings==2.12.0
+
+langchain==1.2.7
+langchain-text-splitters==1.1.0
+
+# Provider packages (required for "latest" LangChain integrations)
+langchain-ollama==1.0.1
+langchain-qdrant==1.1.0
+langchain-huggingface==1.2.0
+
+qdrant-client==1.16.2
+
+sentence-transformers==5.2.1
+pypdf==4.2.0
+
+streamlit==1.53.1
+python-multipart==0.0.22
+
+langfuse==3.12.0
+
+# Lint
+ruff==0.12.7
+
+# Debugging
+debugpy==1.8.5
+
+# Eval
+ragas>=0.4.0
+datasets
+openai>=1.0.0
+
+# Guardrails + PII redaction
+guardrails-ai
+presidio-analyzer
+presidio-anonymizer
+
+# Dev tools
+pytest==8.3.2
+pre-commit==3.8.0

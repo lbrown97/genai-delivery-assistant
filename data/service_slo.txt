@@ -1,0 +1,4 @@
+Service SLOs
+- Availability target: 99.5% (monthly)
+- P95 response time: <= 4s for /agent
+- P99 response time: <= 8s for /agent

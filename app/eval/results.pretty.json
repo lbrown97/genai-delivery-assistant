@@ -1,0 +1,86 @@
+[
+  {
+    "user_input": "Welche Security-Annahmen gelten für dieses Projekt?",
+    "retrieved_contexts": [
+      "# Security Policy\n- No PII must be stored in logs.\n- Secrets must be stored in a vault; never commit to git.\n- Network: private subnets for databases; public access denied.",
+      "# Security Policy\n- No PII must be stored in logs.\n- Secrets must be stored in a vault; never commit to git.\n- Network: private subnets for databases; public access denied.",
+      "# Security Policy\n- No PII must be stored in logs.\n- Secrets must be stored in a vault; never commit to git.\n- Network: private subnets for databases; public access denied."
+    ],
+    "response": "Basierend auf den bereitgestellten Dokumenten gelten folgende Sicherheitsannahmen für das Projekt:\n\n1. Keine PII (Personally Identifiable Information) darf in Logs gespeichert werden.\n2. Geheime Informationen müssen in einem Vault gespeichert werden; dürfen nicht in git-committed werden.\n3. Netzwerk: Datenbanken sind auf privaten Subnetzen; öffentlicher Zugriff ist verboten.",
+    "reference": "Keine PII in Logs; Secrets im Vault; Datenbanken nur in privaten Subnetzen ohne öffentlichen Zugriff.",
+    "answer_relevancy": 0.8799974514,
+    "context_precision": 1.0,
+    "faithfulness": 0.75,
+    "context_recall": 1.0
+  },
+  {
+    "user_input": "Wie werden Backups im Betrieb gehandhabt?",
+    "retrieved_contexts": [
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days."
+    ],
+    "response": "Im Betrieb werden Backups durch tägliche Snapshots erstellt und die Aufbewahrung beträgt 30 Tage.",
+    "reference": "Tägliche Snapshots mit 30 Tagen Aufbewahrung.",
+    "answer_relevancy": 0.9348480116,
+    "context_precision": 1.0,
+    "faithfulness": 1.0,
+    "context_recall": 1.0
+  },
+  {
+    "user_input": "Wer darf Production-Zugriff haben?",
+    "retrieved_contexts": [
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days."
+    ],
+    "response": "Production-Zugriff ist nur für On-Call-Ingenieure mit Mehrfach-Faktor-Authentifizierung (MFA) zugelassen.",
+    "reference": "Nur On-Call Engineers mit MFA.",
+    "answer_relevancy": 0.9442089539,
+    "context_precision": 1.0,
+    "faithfulness": 1.0,
+    "context_recall": 1.0
+  },
+  {
+    "user_input": "Welche Observability-Anforderungen sind beschrieben?",
+    "retrieved_contexts": [
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps.",
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps.",
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps."
+    ],
+    "response": "Die Observability-Anforderungen sind so beschrieben: Es sollte eine Spurung der Retrieval (+ Generierungsschritte) enthalten.",
+    "reference": "Tracing von Retrieval- und Generation-Schritten.",
+    "answer_relevancy": 0.9850713158,
+    "context_precision": 1.0,
+    "faithfulness": 0.6666666667,
+    "context_recall": 1.0
+  },
+  {
+    "user_input": "Welche Anforderungen gibt es an die Vector DB?",
+    "retrieved_contexts": [
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps.",
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps.",
+      "# Architecture Notes\nWe use a RAG service to answer delivery questions.\nVector DB should support persistence, snapshots, and easy operations via Docker.\nObservability should include tracing of retrieval + generation steps."
+    ],
+    "response": "Die Vector DB sollte die folgenden Anforderungen erfüllen:\n\n- Persistenz unterstützen\n- Schnappschüsse (Snapshots) ermöglichen\n- Einfache Bedienbarkeit über Docker bieten",
+    "reference": "Persistenz, Snapshots und einfache Docker-Operations.",
+    "answer_relevancy": 0.9941485783,
+    "context_precision": 1.0,
+    "faithfulness": 0.75,
+    "context_recall": 1.0
+  },
+  {
+    "user_input": "Wie müssen Incidents dokumentiert werden?",
+    "retrieved_contexts": [
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days.",
+      "# Runbook - Incident Handling\n- All incidents must be logged in Jira with severity and timestamps.\n- Production access requires MFA and is limited to on-call engineers.\n- Backups: daily snapshots, retention 30 days."
+    ],
+    "response": "Incidenten müssen in Jira dokumentiert werden mit Angabe der Schwere und Zeitstempeln.",
+    "reference": "In Jira mit Severity und Zeitstempeln.",
+    "answer_relevancy": 0.9715485125,
+    "context_precision": 1.0,
+    "faithfulness": 1.0,
+    "context_recall": 1.0
+  }
+]
