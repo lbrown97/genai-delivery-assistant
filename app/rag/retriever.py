@@ -2,11 +2,13 @@ import contextvars
 import os
 import re
 
-from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
+
 from app.core.settings import settings
 from app.rag.embeddings import get_embedding_model
+
 
 def get_vectorstore():
     client = QdrantClient(url=settings.QDRANT_URL)

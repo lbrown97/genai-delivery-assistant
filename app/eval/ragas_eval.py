@@ -13,6 +13,7 @@ from ragas.metrics._faithfulness import faithfulness
 
 from app.core.settings import settings
 from app.llm.models import get_chat_model
+from app.rag.embeddings import get_embedding_model
 from app.rag.retriever import get_retriever
 
 DATASET_PATH = Path("app/eval/datasets/questions.jsonl")

@@ -2,6 +2,7 @@ import os
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
+
 def _pick_device() -> str:
     env = os.getenv("EMBEDDINGS_DEVICE", "auto").strip().lower()
     if env and env != "auto":

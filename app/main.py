@@ -1,9 +1,9 @@
 import os
 
+import requests
 from fastapi import FastAPI, Request
 from langfuse import Langfuse
 from pydantic import BaseModel
-import requests
 
 from app.agent.router import agent_route
 from app.core.logging import setup_logging

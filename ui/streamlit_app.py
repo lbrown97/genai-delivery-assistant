@@ -50,16 +50,16 @@ use_structured = st.checkbox("Use structured inputs", value=False)
 if use_structured:
     with st.expander("Structured request (optional)", expanded=True):
         st.caption("Use this to provide structured inputs while still calling the agent endpoint.")
-    use_case = st.selectbox(
-        "Use case",
-        ["ADR", "Solution Outline", "User Stories", "Risk Assessment"],
-    )
-    context_query = st.text_input(
-        "Context query (what to retrieve)",
-        value="architecture notes, runbook, security policy",
+        use_case = st.selectbox(
+            "Use case",
+            ["ADR", "Solution Outline", "User Stories", "Risk Assessment"],
+        )
+        context_query = st.text_input(
+            "Context query (what to retrieve)",
+            value="architecture notes, runbook, security policy",
         )
 
-    if use_case == "ADR":
+        if use_case == "ADR":
             decision = st.text_input(
                 "Decision",
                 value="Use Qdrant as vector database for RAG retrieval",
@@ -68,45 +68,45 @@ if use_structured:
                 "Alternatives (comma separated)",
                 value="FAISS, Chroma, Elasticsearch",
             )
-        structured_prompt = (
-            "Create an ADR.\n"
-            f"Decision: {decision}\n"
-            f"Alternatives: {alternatives}\n"
-            f"Context query: {context_query}\n"
-        )
-    elif use_case == "Solution Outline":
-        request = st.text_area(
-            "Request",
-            value="Create a solution outline including architecture, risks, and assumptions.",
-            height=100,
-        )
-        structured_prompt = (
-            "Create a solution outline.\n"
-            f"Request: {request}\n"
-            f"Context query: {context_query}\n"
-        )
-    elif use_case == "User Stories":
-        request = st.text_area(
-            "Request",
-            value="Create user stories and acceptance criteria for incident handling.",
-            height=100,
-        )
-        structured_prompt = (
-            "Create user stories and acceptance criteria.\n"
-            f"Request: {request}\n"
-            f"Context query: {context_query}\n"
-        )
-    else:
-        request = st.text_area(
-            "Request",
-            value="Create a risk assessment and mitigations for this project.",
-            height=100,
-        )
-        structured_prompt = (
-            "Create a risk assessment.\n"
-            f"Request: {request}\n"
-            f"Context query: {context_query}\n"
-        )
+            structured_prompt = (
+                "Create an ADR.\n"
+                f"Decision: {decision}\n"
+                f"Alternatives: {alternatives}\n"
+                f"Context query: {context_query}\n"
+            )
+        elif use_case == "Solution Outline":
+            request = st.text_area(
+                "Request",
+                value="Create a solution outline including architecture, risks, and assumptions.",
+                height=100,
+            )
+            structured_prompt = (
+                "Create a solution outline.\n"
+                f"Request: {request}\n"
+                f"Context query: {context_query}\n"
+            )
+        elif use_case == "User Stories":
+            request = st.text_area(
+                "Request",
+                value="Create user stories and acceptance criteria for incident handling.",
+                height=100,
+            )
+            structured_prompt = (
+                "Create user stories and acceptance criteria.\n"
+                f"Request: {request}\n"
+                f"Context query: {context_query}\n"
+            )
+        else:
+            request = st.text_area(
+                "Request",
+                value="Create a risk assessment and mitigations for this project.",
+                height=100,
+            )
+            structured_prompt = (
+                "Create a risk assessment.\n"
+                f"Request: {request}\n"
+                f"Context query: {context_query}\n"
+            )
 
     with st.expander("Show generated prompt", expanded=False):
         st.code(structured_prompt)

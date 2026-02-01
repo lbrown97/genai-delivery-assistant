@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+
 def format_context(docs) -> str:
     # docs are LangChain Documents
     parts: List[str] = []

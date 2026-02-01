@@ -1,4 +1,4 @@
-from app.rag.citations import format_context, collect_sources
+from app.rag.citations import collect_sources, format_context
 from app.rag.retriever import get_retriever_with_scores
 
 
