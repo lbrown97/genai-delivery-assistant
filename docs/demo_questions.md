@@ -12,6 +12,14 @@ General RAG (with citations)
 7) What are the availability and latency SLOs?
 8) What change management rules apply?
 
+Refusal / Insufficient Context
+------------------------------
+1) What is the total project budget in USD?
+2) Who is the current CEO of our client?
+3) Provide the exact IP address range of the production VPC.
+4) What is the employee headcount of the customer?
+5) List all customer secrets used in production.
+
 Agentic Structured Outputs
 --------------------------
 1) Create a solution outline including architecture, risks, and assumptions.
