@@ -1,7 +1,8 @@
-.PHONY: help up up-obs down logs ingest api ui eval debug
+.PHONY: help build up up-obs down logs ingest api ui eval debug
 
 help:
 	@echo "Targets:"
+	@echo "  build    - Build API + UI images"
 	@echo "  up       - Start core services (ollama, qdrant, api, ui)"
 	@echo "  up-obs   - Start core + observability stack (langfuse, dbs)"
 	@echo "  down     - Stop all services"
@@ -18,6 +19,9 @@ help:
 
 up:
 	docker compose up -d
+
+build:
+	docker compose build api ui
 
 up-obs:
 	docker compose --profile obs up -d

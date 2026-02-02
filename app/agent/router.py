@@ -33,6 +33,27 @@ def _run_structured(
     )
 
 
+def _is_artifact_request(question: str) -> bool:
+    q = question.lower()
+    artifact_terms = [
+        "adr",
+        "architecture decision",
+        "decision record",
+        "solution outline",
+        "user story",
+        "user stories",
+        "acceptance criteria",
+        "risk assessment",
+        "risk analysis",
+        "risk register",
+    ]
+    if any(term in q for term in artifact_terms):
+        return True
+    create_verbs = ["create", "draft", "write", "generate", "produce", "prepare"]
+    artifact_nouns = ["outline", "stories", "assessment", "adr", "decision record"]
+    return any(v in q for v in create_verbs) and any(n in q for n in artifact_nouns)
+
+
 def answer_question(question: str, agent_meta: dict | None = None):
     safe_question = redact_pii(question)
     from app.agent.tools import retrieve_context_with_scores
@@ -145,6 +166,9 @@ def generate_risk_assessment(request: str, context_query: str, agent_meta: dict 
 def agent_route(question: str):
     # Route to best tool using a deterministic call
     safe_question = redact_pii(question)
+    if not _is_artifact_request(safe_question):
+        return answer_question(question)
+
     llm = get_chat_model(temperature=0.0)
     prompt = ROUTER_PROMPT.format(question=safe_question)
     cfg = lf_config(
@@ -153,20 +177,14 @@ def agent_route(question: str):
     )
     msg = llm.invoke(prompt, config=cfg)
 
-    try:
-        call = ToolCall.model_validate_json(msg.content)
-    except Exception:
-        # Fallback to plain RAG answer if routing fails
-        return answer_question(question)
+    call = ToolCall.model_validate_json(msg.content)
 
     tool = call.tool
     args = call.args or {}
 
     agent_meta = {"router_tool": tool, "router_args": args}
 
-    if tool == "ask":
-        out = answer_question(args.get("question", question), agent_meta=agent_meta)
-    elif tool == "adr":
+    if tool == "adr":
         out = generate_adr(
             args.get("decision", question),
             args.get("alternatives", ["Option A", "Option B", "Option C"]),
