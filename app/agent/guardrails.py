@@ -98,7 +98,14 @@ def _get_presidio_engines(
     )
     phone_pattern = Pattern(
         name="phone",
-        regex=r"(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{3,4}",
+        regex=(
+            r"\b"
+            r"(?=(?:\D*\d){7,15}\D*$)"
+            r"(?:\+?\d{1,3}[-\s]?)?"
+            r"(?:\(\d{2,4}\)|\d{2,4})[-\s]?"
+            r"\d{3,4}[-\s]?\d{3,4}"
+            r"\b"
+        ),
         score=0.6,
     )
     ip_pattern = Pattern(

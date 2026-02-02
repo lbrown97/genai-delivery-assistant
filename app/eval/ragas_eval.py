@@ -14,7 +14,11 @@ from ragas.metrics._faithfulness import faithfulness
 from app.core.settings import settings
 from app.llm.models import get_chat_model
 from app.rag.embeddings import get_embedding_model
-from app.rag.retriever import get_retriever
+from app.rag.retriever import (
+    clear_doc_scope_override,
+    get_retriever_with_scores,
+    set_doc_scope_override,
+)
 
 DATASET_PATH = Path("app/eval/datasets/questions.jsonl")
 PDF_DATASET_PATH = Path("app/eval/datasets/pdf_questions.jsonl")
@@ -69,8 +73,9 @@ def _build_ragas_embeddings():
 
 def build_dataset(k: int = 3) -> Dataset:
     rows = _load_all_questions()
-    retriever = get_retriever(k=k)
-
+    include_external = bool(_load_questions(PDF_DATASET_PATH))
+    if include_external:
+        set_doc_scope_override("all")
     records: Dict[str, List[Any]] = {
         "question": [],
         "answer": [],
@@ -78,17 +83,22 @@ def build_dataset(k: int = 3) -> Dataset:
         "ground_truth": [],
     }
 
-    for r in rows:
-        question = r["question"]
-        gt = r.get("ground_truth", "")
-        docs = retriever.invoke(question)
-        contexts = [d.page_content for d in docs]
-        answer = _answer_from_context(question, contexts)
+    try:
+        for r in rows:
+            question = r["question"]
+            gt = r.get("ground_truth", "")
+            pairs = get_retriever_with_scores(question, k=k)
+            docs = [d for d, _ in pairs]
+            contexts = [d.page_content for d in docs]
+            answer = _answer_from_context(question, contexts)
 
-        records["question"].append(question)
-        records["answer"].append(answer)
-        records["contexts"].append(contexts)
-        records["ground_truth"].append(gt)
+            records["question"].append(question)
+            records["answer"].append(answer)
+            records["contexts"].append(contexts)
+            records["ground_truth"].append(gt)
+    finally:
+        if include_external:
+            clear_doc_scope_override()
 
     return Dataset.from_dict(records)
 

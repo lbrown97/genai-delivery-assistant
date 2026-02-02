@@ -11,6 +11,40 @@ st.title("GenAI Delivery Assistant (Agentic)")
 
 col1, col2 = st.columns([1, 2])
 
+
+def _render_response(payload: dict):
+    if not isinstance(payload, dict):
+        st.json(payload)
+        return
+
+    answer = payload.get("answer")
+    structured = payload.get("structured")
+    if answer:
+        st.markdown(answer)
+    elif structured:
+        st.json(structured)
+
+    if payload.get("message"):
+        st.info(payload["message"])
+    if payload.get("error"):
+        st.error(payload["error"])
+
+    with st.expander("Sources", expanded=False):
+        st.json(payload.get("sources", []))
+
+    with st.expander("Agent Metadata", expanded=False):
+        st.code(
+            {
+                "agent_tool": payload.get("agent_tool"),
+                "agent_args": payload.get("agent_args"),
+            },
+            language="json",
+        )
+
+    with st.expander("Raw JSON", expanded=False):
+        st.json(payload)
+
+
 with col1:
     st.subheader("Ingest")
     if st.button("Ingest /data"):
@@ -25,24 +59,28 @@ with col2:
         index=0,
         help="Controls how context is retrieved.",
     )
+    include_external = st.checkbox(
+        "Include external PDFs",
+        value=False,
+        help="Include external reference PDFs (OWASP/NIST/SRE) in retrieval.",
+    )
     q = st.text_area(
         "Request",
         value="Create a solution outline including architecture, risks, and assumptions.",
         height=140,
     )
     if st.button("Run Agent"):
+        headers = {"X-Retrieval-Mode": mode}
+        if include_external:
+            headers["X-Doc-Scope"] = "all"
         r = requests.post(
             f"{API_URL}/agent",
             json={"question": q},
-            headers={"X-Retrieval-Mode": mode},
+            headers=headers,
             timeout=300,
         )
         payload = r.json()
-        if isinstance(payload, dict) and payload.get("agent_tool"):
-            st.caption(f"Selected tool: {payload.get('agent_tool')}")
-            if payload.get("agent_args"):
-                st.code(payload.get("agent_args"), language="json")
-        st.json(payload)
+        _render_response(payload)
 
 st.divider()
 
@@ -109,15 +147,14 @@ if use_structured:
         st.caption("Tip: use the copy icon in the code block to copy the prompt.")
 
     if st.button("Run Structured Request"):
+        headers = {"X-Retrieval-Mode": mode}
+        if include_external:
+            headers["X-Doc-Scope"] = "all"
         r = requests.post(
             f"{API_URL}/agent",
             json={"question": structured_prompt},
-            headers={"X-Retrieval-Mode": mode},
+            headers=headers,
             timeout=300,
         )
         payload = r.json()
-        if isinstance(payload, dict) and payload.get("agent_tool"):
-            st.caption(f"Selected tool: {payload.get('agent_tool')}")
-            if payload.get("agent_args"):
-                st.code(payload.get("agent_args"), language="json")
-        st.json(payload)
+        _render_response(payload)

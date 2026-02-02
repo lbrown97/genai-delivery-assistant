@@ -16,6 +16,7 @@ def load_documents(data_dir: str) -> list[Document]:
     for p in base.rglob("*"):
         if p.is_file() and p.suffix.lower() in SUPPORTED:
             rel = str(p.relative_to(base))
+            doc_type = "external" if rel.startswith("external/") else "project"
             if p.suffix.lower() == ".pdf":
                 try:
                     from pypdf import PdfReader
@@ -28,7 +29,10 @@ def load_documents(data_dir: str) -> list[Document]:
                             docs.append(
                                 Document(
                                     page_content=text,
-                                    metadata={"source_id": f"{rel}#p{i}"},
+                                    metadata={
+                                        "source_id": f"{rel}#p{i}",
+                                        "doc_type": doc_type,
+                                    },
                                 )
                             )
                 except Exception:
@@ -39,7 +43,7 @@ def load_documents(data_dir: str) -> list[Document]:
                 docs.append(
                     Document(
                         page_content=text,
-                        metadata={"source_id": rel},
+                        metadata={"source_id": rel, "doc_type": doc_type},
                     )
                 )
     return docs
