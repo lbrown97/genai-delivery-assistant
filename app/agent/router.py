@@ -4,7 +4,30 @@ from app.agent.guardrails import groundedness_with_scores, redact_pii, validate_
 from app.agent.router_prompts import ANSWER, ROUTER_PROMPT, SYSTEM
 from app.agent.router_utils import generate_structured, lf_config, wrap_response
 from app.agent.schemas import ToolCall
+from app.agent.tool_config import TOOL_CONFIG
 from app.llm.models import get_chat_model
+
+UNKNOWN_ANSWER = "I don't know based on the provided documents."
+ARTIFACT_TERMS = (
+    "adr",
+    "architecture decision",
+    "decision record",
+    "solution outline",
+    "user story",
+    "user stories",
+    "acceptance criteria",
+    "risk assessment",
+    "risk analysis",
+    "risk register",
+)
+CREATE_VERBS = ("create", "draft", "write", "generate", "produce", "prepare")
+ARTIFACT_NOUNS = ("outline", "stories", "assessment", "adr", "decision record")
+
+
+def _is_unknown_answer(text: str) -> bool:
+    normalized = " ".join((text or "").strip().split()).lower()
+    target = UNKNOWN_ANSWER.rstrip(".").lower()
+    return normalized.startswith(target)
 
 
 def _run_structured(
@@ -15,8 +38,6 @@ def _run_structured(
     context_query: str,
     agent_meta: dict | None,
 ):
-    from app.agent.tool_config import TOOL_CONFIG
-
     cfg = TOOL_CONFIG[tool_key]
     return generate_structured(
         agent_tool=tool_key,
@@ -35,23 +56,9 @@ def _run_structured(
 
 def _is_artifact_request(question: str) -> bool:
     q = question.lower()
-    artifact_terms = [
-        "adr",
-        "architecture decision",
-        "decision record",
-        "solution outline",
-        "user story",
-        "user stories",
-        "acceptance criteria",
-        "risk assessment",
-        "risk analysis",
-        "risk register",
-    ]
-    if any(term in q for term in artifact_terms):
+    if any(term in q for term in ARTIFACT_TERMS):
         return True
-    create_verbs = ["create", "draft", "write", "generate", "produce", "prepare"]
-    artifact_nouns = ["outline", "stories", "assessment", "adr", "decision record"]
-    return any(v in q for v in create_verbs) and any(n in q for n in artifact_nouns)
+    return any(v in q for v in CREATE_VERBS) and any(n in q for n in ARTIFACT_NOUNS)
 
 
 def answer_question(question: str, agent_meta: dict | None = None):
@@ -72,11 +79,20 @@ def answer_question(question: str, agent_meta: dict | None = None):
             agent_tool="ask",
             agent_args={"question": safe_question},
             sources=[],
-            answer="I don't know based on the provided documents.",
+            error="not_enough_context",
+            message="Retrieved context did not meet groundedness thresholds.",
+            answer=UNKNOWN_ANSWER,
         )
 
     llm = get_chat_model(temperature=0.2)
-    prompt = f"{SYSTEM}\n\n" + ANSWER.format(context=r["context"], question=safe_question)
+    source_ids = [s.get("source_id", "") for s in r["sources"] if s.get("source_id")]
+    allowed_sources_block = "\n".join(f"- [{sid}]" for sid in source_ids)
+    prompt = (
+        f"{SYSTEM}\n\n"
+        + ANSWER.format(context=r["context"], question=safe_question)
+        + "\n\nAllowed source_ids for citations (use only these):\n"
+        + (allowed_sources_block or "- (none)")
+    )
 
     cfg = lf_config(
         tags=["use_case:ask"],
@@ -84,21 +100,32 @@ def answer_question(question: str, agent_meta: dict | None = None):
         extra_meta=agent_meta,
     )
     msg = llm.invoke(prompt, config=cfg)
+    answer_text = msg.content
 
-    allowed_ids = {s.get("source_id", "") for s in r["sources"]}
-    if not validate_citations(msg.content, allowed_source_ids=allowed_ids):
+    if _is_unknown_answer(answer_text):
         return wrap_response(
             agent_tool="ask",
             agent_args={"question": safe_question},
-            sources=[],
-            answer="I don't know based on the provided documents.",
+            sources=r["sources"],
+            answer=UNKNOWN_ANSWER,
+        )
+
+    allowed_ids = {s.get("source_id", "") for s in r["sources"]}
+    if not validate_citations(answer_text, allowed_source_ids=allowed_ids):
+        return wrap_response(
+            agent_tool="ask",
+            agent_args={"question": safe_question},
+            sources=r["sources"],
+            error="citation_validation_failed",
+            message="Model output did not cite retrieved sources in an acceptable format.",
+            answer=UNKNOWN_ANSWER,
         )
 
     return wrap_response(
         agent_tool="ask",
         agent_args={"question": safe_question},
         sources=r["sources"],
-        answer=msg.content,
+        answer=answer_text,
     )
 
 
@@ -128,34 +155,43 @@ def generate_adr(
 
 
 def generate_solution_outline(request: str, context_query: str, agent_meta: dict | None = None):
-    safe_request = redact_pii(request)
-    safe_context_query = redact_pii(context_query)
-    return _run_structured(
+    return _generate_request_artifact(
         "solution_outline",
-        format_kwargs={"request": safe_request},
-        agent_args={"request": safe_request, "context_query": safe_context_query},
+        request=request,
         context_query=context_query,
         agent_meta=agent_meta,
     )
 
 
 def generate_user_stories(request: str, context_query: str, agent_meta: dict | None = None):
-    safe_request = redact_pii(request)
-    safe_context_query = redact_pii(context_query)
-    return _run_structured(
+    return _generate_request_artifact(
         "user_stories",
-        format_kwargs={"request": safe_request},
-        agent_args={"request": safe_request, "context_query": safe_context_query},
+        request=request,
         context_query=context_query,
         agent_meta=agent_meta,
     )
 
 
 def generate_risk_assessment(request: str, context_query: str, agent_meta: dict | None = None):
+    return _generate_request_artifact(
+        "risk_assessment",
+        request=request,
+        context_query=context_query,
+        agent_meta=agent_meta,
+    )
+
+
+def _generate_request_artifact(
+    tool_key: str,
+    *,
+    request: str,
+    context_query: str,
+    agent_meta: dict | None = None,
+):
     safe_request = redact_pii(request)
     safe_context_query = redact_pii(context_query)
     return _run_structured(
-        "risk_assessment",
+        tool_key,
         format_kwargs={"request": safe_request},
         agent_args={"request": safe_request, "context_query": safe_context_query},
         context_query=context_query,
@@ -184,33 +220,31 @@ def agent_route(question: str):
 
     agent_meta = {"router_tool": tool, "router_args": args}
 
-    if tool == "adr":
-        out = generate_adr(
+    handlers = {
+        "adr": lambda: generate_adr(
             args.get("decision", question),
             args.get("alternatives", ["Option A", "Option B", "Option C"]),
             args.get("context_query", question),
             agent_meta=agent_meta,
-        )
-    elif tool == "solution_outline":
-        out = generate_solution_outline(
+        ),
+        "solution_outline": lambda: generate_solution_outline(
             args.get("request", question),
             args.get("context_query", question),
             agent_meta=agent_meta,
-        )
-    elif tool == "user_stories":
-        out = generate_user_stories(
+        ),
+        "user_stories": lambda: generate_user_stories(
             args.get("request", question),
             args.get("context_query", question),
             agent_meta=agent_meta,
-        )
-    elif tool == "risk_assessment":
-        out = generate_risk_assessment(
+        ),
+        "risk_assessment": lambda: generate_risk_assessment(
             args.get("request", question),
             args.get("context_query", question),
             agent_meta=agent_meta,
-        )
-    else:
-        out = answer_question(question, agent_meta=agent_meta)
-        tool = "ask"
+        ),
+    }
 
-    return out
+    handler = handlers.get(tool)
+    if handler is None:
+        return answer_question(question, agent_meta=agent_meta)
+    return handler()

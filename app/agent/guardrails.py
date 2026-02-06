@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from typing import Any, Type
 
 _PRESIDIO_LOGGERS = ["presidio-analyzer", "presidio_analyzer"]
@@ -178,11 +179,42 @@ def validate_citations(text: str, allowed_source_ids: set[str] | None = None) ->
     """
     Minimal citation format check: require at least one [source_id]-style token.
     """
-    import re
-
     matches = re.findall(r"\[([^\[\]\n]{1,100})\]", text)
     if not matches:
         return False
     if allowed_source_ids is None:
         return True
-    return any(m in allowed_source_ids for m in matches)
+    allowed = set()
+    for source_id in allowed_source_ids:
+        allowed.update(_source_id_variants(source_id))
+
+    for match in matches:
+        if _normalize_source_id(match) in allowed:
+            return True
+    return False
+
+
+def _normalize_source_id(source_id: str) -> str:
+    source = source_id.strip().strip("`'\"")
+    source = re.sub(r"^(?:source_id|source|citation)\s*[:=]\s*", "", source, flags=re.IGNORECASE)
+    source = source.rstrip(".,;:")
+    source = source.replace("\\", "/")
+    return source.lower()
+
+
+def _source_id_variants(source_id: str) -> set[str]:
+    source = _normalize_source_id(source_id)
+    if not source:
+        return set()
+
+    file_with_path, _, page = source.partition("#")
+    file_name = file_with_path.rsplit("/", 1)[-1]
+
+    variants = {
+        source,
+        file_with_path,
+        file_name,
+    }
+    if page:
+        variants.add(f"{file_name}#{page}")
+    return {v for v in variants if v}

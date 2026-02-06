@@ -12,9 +12,11 @@ from app.core.settings import settings
 from app.rag.ingest import ingest
 from app.rag.retriever import (
     clear_doc_scope_override,
+    clear_retrieval_k_override,
     clear_retrieval_mode_override,
     get_retriever_with_scores,
     set_doc_scope_override,
+    set_retrieval_k_override,
     set_retrieval_mode_override,
 )
 
@@ -70,10 +72,21 @@ def ingest_docs():
 def agent(req: AskRequest, request: Request):
     mode = request.headers.get("X-Retrieval-Mode")
     scope = request.headers.get("X-Doc-Scope")
+    k_raw = request.headers.get("X-Retrieval-K")
+    k = None
+    if k_raw:
+        try:
+            parsed = int(k_raw)
+            if parsed > 0:
+                k = parsed
+        except ValueError:
+            k = None
     if mode:
         set_retrieval_mode_override(mode)
     if scope:
         set_doc_scope_override(scope)
+    if k is not None:
+        set_retrieval_k_override(k)
     try:
         return agent_route(req.question)
     finally:
@@ -81,6 +94,8 @@ def agent(req: AskRequest, request: Request):
             clear_retrieval_mode_override()
         if scope:
             clear_doc_scope_override()
+        if k is not None:
+            clear_retrieval_k_override()
 
 
 @app.get("/debug/langfuse")

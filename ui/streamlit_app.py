@@ -5,6 +5,7 @@ import streamlit as st
 
 API_URL = os.getenv("API_URL", "http://api:8000")
 RETRIEVAL_OPTIONS = ["mmr", "hybrid", "similarity"]
+SCOPE_OPTIONS = ["project", "all", "external"]
 
 st.set_page_config(page_title="GenAI Delivery Assistant", layout="wide")
 st.title("GenAI Delivery Assistant (Agentic)")
@@ -59,10 +60,21 @@ with col2:
         index=0,
         help="Controls how context is retrieved.",
     )
-    include_external = st.checkbox(
-        "Include external PDFs",
-        value=False,
-        help="Include external reference PDFs (OWASP/NIST/SRE) in retrieval.",
+    scope = st.selectbox(
+        "Document scope",
+        SCOPE_OPTIONS,
+        index=0,
+        help=(
+            "project: internal docs only, all: include external PDFs, external: external PDFs only."
+        ),
+    )
+    k = st.number_input(
+        "Top-k",
+        min_value=1,
+        max_value=30,
+        value=6,
+        step=1,
+        help="How many chunks the retriever should return.",
     )
     q = st.text_area(
         "Request",
@@ -70,9 +82,11 @@ with col2:
         height=140,
     )
     if st.button("Run Agent"):
-        headers = {"X-Retrieval-Mode": mode}
-        if include_external:
-            headers["X-Doc-Scope"] = "all"
+        headers = {
+            "X-Retrieval-Mode": mode,
+            "X-Doc-Scope": scope,
+            "X-Retrieval-K": str(k),
+        }
         r = requests.post(
             f"{API_URL}/agent",
             json={"question": q},
@@ -147,9 +161,11 @@ if use_structured:
         st.caption("Tip: use the copy icon in the code block to copy the prompt.")
 
     if st.button("Run Structured Request"):
-        headers = {"X-Retrieval-Mode": mode}
-        if include_external:
-            headers["X-Doc-Scope"] = "all"
+        headers = {
+            "X-Retrieval-Mode": mode,
+            "X-Doc-Scope": scope,
+            "X-Retrieval-K": str(k),
+        }
         r = requests.post(
             f"{API_URL}/agent",
             json={"question": structured_prompt},
