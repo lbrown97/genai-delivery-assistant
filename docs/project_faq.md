@@ -1,10 +1,10 @@
-Demo FAQ
-========
+Project FAQ
+===========
 
 Why this project?
 -----------------
 It demonstrates end-to-end delivery skills: RAG, agent routing, guardrails, evals,
-observability, and basic DevOps practices with an open-source stack.
+observability, and core DevOps practices with an open-source stack.
 
 How is hallucination controlled?
 --------------------------------
@@ -15,7 +15,7 @@ How is hallucination controlled?
 How is data protected?
 ----------------------
 - Best-effort PII redaction on inputs and ingested content
-- No customer data required; demo artifacts are synthetic
+- No customer data required; included artifacts are synthetic
 
 What is “agentic” here?
 -----------------------

@@ -5,8 +5,8 @@ Agentic, retrieval-augmented assistant for consulting delivery. It answers quest
 from project artifacts and produces structured outputs (ADR, solution outline, user
 stories, risk assessment) with citations and guardrails.
 
-Why this demo
--------------
+Why this project
+----------------
 - End-to-end RAG with local LLM (Ollama) and vector DB (Qdrant)
 - Agentic tool routing with structured outputs
 - Guardrails (schema validation + PII redaction + citation enforcement)
@@ -20,7 +20,7 @@ Key features
 - Retrieval: similarity, MMR (default), or hybrid
 - Answers with citations or refusal
 - Structured JSON outputs (ADR, solution outline, user stories, risk assessment)
-- PII redaction (best-effort, demo-grade)
+- PII redaction (best-effort baseline)
 - Langfuse traces and tags
 - RAGAS and router evaluation
 
@@ -50,18 +50,26 @@ Quickstart
    ```bash
    docker compose up -d
    ```
-3) Ingest data:
+3) Download external reference PDFs (optional, needed for external-question demos):
+   ```bash
+   make external-data
+   ```
+4) Ingest data (API or UI):
    ```bash
    curl -X POST http://localhost:8000/ingest
    ```
-4) Open UI:
+   - Or, after opening the UI, click `Ingest /data` in the sidebar.
+5) Open UI:
    - http://localhost:8501
+6) Try sample questions:
+   - `docs/sample_questions.md`
 
 Data layout
 -----------
 - `data/` is ingested recursively.
 - Files under `data/external/` are tagged as `doc_type=external`.
 - Files under the rest of `data/` are tagged as `doc_type=project`.
+- External PDFs are intentionally not tracked in git; see `data/external/README.md`.
 
 Observability (optional)
 ------------------------
@@ -86,30 +94,31 @@ Evaluation
 
 Retrieval modes
 ---------------
-- Default: MMR
+- Default: `RETRIEVAL_MODE=auto` (uses `mmr` for `project` scope and `hybrid` for `external` scope)
 - Override per request using UI dropdown or header:
   - Headers:
     - `X-Retrieval-Mode: mmr|hybrid|similarity`
     - `X-Doc-Scope: project|external|all`
     - `X-Retrieval-K: <int>`
 - Env options:
-  - `RETRIEVAL_MODE=mmr|hybrid|similarity`
+  - `RETRIEVAL_MODE=auto|mmr|hybrid|similarity`
   - `RETRIEVAL_K=6` (default top-k when no header override is sent)
   - `DOC_SCOPE=project|external|all`
   - `MMR_FETCH_K=24`, `MMR_LAMBDA=0.5`
-  - `HYBRID_FETCH_K=24`, `HYBRID_ALPHA=0.7`
+  - `HYBRID_FETCH_K=24`, `HYBRID_FETCH_K_EXTERNAL_MIN=60`, `HYBRID_FETCH_K_EXTERNAL_MULTIPLIER=5`, `HYBRID_FETCH_K_EXTERNAL_MAX=120`, `HYBRID_ALPHA=0.7`
+  - `HYBRID_ALPHA_PROJECT=0.7`, `HYBRID_ALPHA_EXTERNAL=0.45`, `HYBRID_ALPHA_ALL=0.65`
   - `SIMILARITY_FETCH_K=24`
-  - `IDENTIFIER_FETCH_K=500`, `IDENTIFIER_BOOST=0.2` (for queries like `LLM06`)
+- Note: `*_FETCH_K*` controls retrieval candidate depth only; prompt context still uses returned top-`k`.
 
 Guardrails and safety
 ---------------------
 - Schema validation with GuardrailsAI (fallback to Pydantic)
-- PII redaction (regex-based; best-effort demo)
+- PII redaction (regex-based; best-effort)
 - Refuse if missing/invalid citations or insufficient context
 
 Security note
 -------------
-- Demo artifacts are synthetic. Do not ingest real customer data.
+- Included artifacts are synthetic. Do not ingest real customer data without stronger production controls.
 - PII redaction is best-effort and may miss edge cases.
 
 Health checks
@@ -130,17 +139,17 @@ Debug endpoints
 - `GET /debug/qdrant` (inspect collection samples and payload keys)
 - `GET /debug/langfuse` (check SDK auth wiring)
 
-Demo checklist
---------------
-See `docs/demo_checklist.md`.
-
-Examples and FAQ
-----------------
+Examples, FAQ, and Test Prompts
+-------------------------------
 - Examples: `docs/examples/`
-- Demo FAQ: `docs/demo_faq.md`
-- Demo questions: `docs/demo_questions.md`
+- Project FAQ: `docs/project_faq.md`
+- Sample questions for testing: `docs/sample_questions.md`
 
 Notes
 -----
 - Changing embeddings requires re-ingest.
 - PDF extraction quality depends on PDF text extractability.
+
+License
+-------
+MIT. See `LICENSE`.

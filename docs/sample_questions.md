@@ -1,5 +1,5 @@
-Demo Questions
-==============
+Sample Questions
+================
 
 General RAG (with citations)
 ----------------------------

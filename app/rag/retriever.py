@@ -155,7 +155,15 @@ def get_retriever_with_scores(query: str, k: int | None = None):
         return mmr_pairs[:k]
 
     if mode == "hybrid":
-        fetch_k = max(k, env_int("HYBRID_FETCH_K", 24))
+        base_fetch_k = env_int("HYBRID_FETCH_K", 24)
+        if scope == "external":
+            external_min = env_int("HYBRID_FETCH_K_EXTERNAL_MIN", 60)
+            external_multiplier = env_int("HYBRID_FETCH_K_EXTERNAL_MULTIPLIER", 5)
+            external_max = env_int("HYBRID_FETCH_K_EXTERNAL_MAX", 120)
+            dynamic_target = max(base_fetch_k, external_min, k * max(1, external_multiplier))
+            fetch_k = max(k, min(max(k, external_max), dynamic_target))
+        else:
+            fetch_k = max(k, base_fetch_k)
         if scope == "external":
             alpha = env_float("HYBRID_ALPHA_EXTERNAL", env_float("HYBRID_ALPHA", 0.7))
         elif scope == "project":
