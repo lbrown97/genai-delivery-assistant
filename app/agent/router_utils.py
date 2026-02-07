@@ -11,6 +11,8 @@ from app.llm.models import get_chat_model
 
 
 def lf_config(tags: list[str], metadata: dict, extra_meta: dict | None = None):
+    """Build LangChain invocation config with optional Langfuse callback."""
+
     handler = get_langfuse_handler()
     if not handler:
         return {}
@@ -33,6 +35,8 @@ def wrap_response(
     error: str | None = None,
     message: str | None = None,
 ):
+    """Create a normalized API response payload with redaction safeguards."""
+
     payload = {
         "agent_tool": agent_tool,
         "agent_args": agent_args,
@@ -57,6 +61,8 @@ def retrieve_context(
     agent_args: dict,
     error_message: str,
 ):
+    """Retrieve context and enforce groundedness before tool execution."""
+
     r = retrieve_context_with_scores(context_query)
     docs = r["docs"]
     if not groundedness_with_scores(
@@ -77,6 +83,8 @@ def retrieve_context(
 
 
 def finalize_sources(model_obj, docs):
+    """Restrict structured-output sources to IDs present in retrieved docs."""
+
     known_ids = {d.metadata.get("source_id", "") for d in docs}
     model_obj.sources = [s for s in model_obj.sources if s in known_ids] or list(known_ids)[:3]
     return model_obj
@@ -96,6 +104,8 @@ def generate_structured(
     agent_meta: dict | None,
     error_message: str,
 ):
+    """Run the shared structured-generation workflow for a tool."""
+
     retrieved, fail = retrieve_context(
         context_query,
         gate=gate,

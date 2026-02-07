@@ -26,6 +26,8 @@ OUT_PATH = Path("app/eval/results.json")
 
 
 def _load_questions(path: Path) -> List[Dict[str, Any]]:
+    """Load evaluation questions from a JSONL file."""
+
     rows: List[Dict[str, Any]] = []
     if not path.exists():
         return rows
@@ -38,12 +40,16 @@ def _load_questions(path: Path) -> List[Dict[str, Any]]:
 
 
 def _load_all_questions() -> List[Dict[str, Any]]:
+    """Load base and PDF-focused evaluation question sets."""
+
     rows = _load_questions(DATASET_PATH)
     rows.extend(_load_questions(PDF_DATASET_PATH))
     return rows
 
 
 def _answer_from_context(question: str, contexts: List[str]) -> str:
+    """Generate an answer using only retrieved contexts for a question."""
+
     joined = "\n\n---\n\n".join(contexts)
     prompt = (
         "Answer the question using ONLY the provided context. "
@@ -56,6 +62,8 @@ def _answer_from_context(question: str, contexts: List[str]) -> str:
 
 
 def _build_ragas_llm():
+    """Create a RAGAS-compatible LLM wrapper pointed at local Ollama."""
+
     from openai import OpenAI
 
     base_url = os.getenv("OLLAMA_BASE_URL", settings.OLLAMA_BASE_URL).rstrip("/")
@@ -67,11 +75,15 @@ def _build_ragas_llm():
 
 
 def _build_ragas_embeddings():
+    """Use the same embedding model configuration as the app runtime."""
+
     # Use the same LangChain embeddings as the app (GPU if available)
     return get_embedding_model()
 
 
 def build_dataset(k: int = 3) -> Dataset:
+    """Build a RAGAS dataset by retrieving context and generating answers."""
+
     rows = _load_all_questions()
     include_external = bool(_load_questions(PDF_DATASET_PATH))
     if include_external:
@@ -104,6 +116,8 @@ def build_dataset(k: int = 3) -> Dataset:
 
 
 def run_eval():
+    """Run RAGAS evaluation and persist results to JSON."""
+
     dataset = build_dataset()
 
     llm = _build_ragas_llm()

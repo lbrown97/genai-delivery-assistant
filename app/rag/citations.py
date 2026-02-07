@@ -2,6 +2,8 @@ from typing import Any, Dict, List
 
 
 def format_context(docs) -> str:
+    """Format retrieved documents into a prompt-ready context string."""
+
     # docs are LangChain Documents
     parts: List[str] = []
     for d in docs:
@@ -11,6 +13,8 @@ def format_context(docs) -> str:
 
 
 def collect_sources(docs) -> List[Dict[str, Any]]:
+    """Collect unique source metadata from retrieved documents."""
+
     out = []
     for d in docs:
         out.append(

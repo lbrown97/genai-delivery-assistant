@@ -11,6 +11,8 @@ SUPPORTED = {".md", ".txt", ".pdf"}
 
 
 def load_documents(data_dir: str) -> list[Document]:
+    """Load supported files from disk into LangChain documents with metadata."""
+
     docs = []
     base = Path(data_dir)
     for p in base.rglob("*"):
@@ -50,6 +52,8 @@ def load_documents(data_dir: str) -> list[Document]:
 
 
 def ingest(data_dir: str = "data"):
+    """Ingest loaded documents into Qdrant after chunking."""
+
     raw_docs = load_documents(data_dir)
     if not raw_docs:
         return {"status": "no_docs_found", "count": 0}

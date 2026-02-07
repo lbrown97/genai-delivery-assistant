@@ -4,6 +4,8 @@ PROMPTS_DIR = Path("app/llm/prompts")
 
 
 def _read_prompt(name: str) -> str:
+    """Load a prompt template file from the prompts directory."""
+
     return (PROMPTS_DIR / name).read_text(encoding="utf-8")
 
 

@@ -14,6 +14,8 @@ col1, col2 = st.columns([1, 2])
 
 
 def _render_response(payload: dict):
+    """Render agent response sections in a consistent Streamlit layout."""
+
     if not isinstance(payload, dict):
         st.json(payload)
         return

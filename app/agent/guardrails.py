@@ -16,6 +16,8 @@ def groundedness_with_scores(
     min_unique_sources: int = 1,
     min_score: float = 0.25,
 ) -> bool:
+    """Validate minimum retrieval quality using doc count, sources, and distance."""
+
     if docs is None or scores is None:
         return False
     if len(docs) < min_docs:
@@ -30,6 +32,8 @@ def groundedness_with_scores(
 
 
 def _pii_enabled() -> bool:
+    """Return whether PII redaction is enabled by environment flag."""
+
     return os.getenv("PII_REDACTION", "1").lower() in {"1", "true", "yes", "on"}
 
 
@@ -88,6 +92,8 @@ def _get_presidio_engines(
     PatternRecognizer,
     Pattern,
 ):
+    """Create and cache Presidio analyzer/anonymizer engines with custom patterns."""
+
     if _PRESIDIO_CACHE["analyzer"] and _PRESIDIO_CACHE["anonymizer"]:
         return _PRESIDIO_CACHE["analyzer"], _PRESIDIO_CACHE["anonymizer"]
 
@@ -146,6 +152,8 @@ def _get_presidio_engines(
 
 
 def _guard_from_pydantic(model: Type[Any]):
+    """Create a Guardrails validator from a Pydantic model when available."""
+
     try:
         from guardrails import Guard
     except Exception:
@@ -195,6 +203,8 @@ def validate_citations(text: str, allowed_source_ids: set[str] | None = None) ->
 
 
 def _normalize_source_id(source_id: str) -> str:
+    """Normalize citation/source tokens to a comparable canonical form."""
+
     source = source_id.strip().strip("`'\"")
     source = re.sub(r"^(?:source_id|source|citation)\s*[:=]\s*", "", source, flags=re.IGNORECASE)
     source = source.rstrip(".,;:")
@@ -203,6 +213,8 @@ def _normalize_source_id(source_id: str) -> str:
 
 
 def _source_id_variants(source_id: str) -> set[str]:
+    """Generate accepted citation variants for a retrieved source identifier."""
+
     source = _normalize_source_id(source_id)
     if not source:
         return set()

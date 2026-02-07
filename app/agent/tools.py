@@ -3,6 +3,8 @@ from app.rag.retriever import get_retriever_with_scores
 
 
 def retrieve_context_with_scores(query: str, k: int = 6):
+    """Return retrieved docs, scores, formatted context, and normalized sources."""
+
     pairs = get_retriever_with_scores(query, k=k)
     docs = [d for d, _ in pairs]
     scores = [s for _, s in pairs]

@@ -57,6 +57,12 @@ Quickstart
 4) Open UI:
    - http://localhost:8501
 
+Data layout
+-----------
+- `data/` is ingested recursively.
+- Files under `data/external/` are tagged as `doc_type=external`.
+- Files under the rest of `data/` are tagged as `doc_type=project`.
+
 Observability (optional)
 ------------------------
 Start Langfuse stack:
@@ -82,17 +88,24 @@ Retrieval modes
 ---------------
 - Default: MMR
 - Override per request using UI dropdown or header:
-  - Header: `X-Retrieval-Mode: mmr|hybrid|similarity`
+  - Headers:
+    - `X-Retrieval-Mode: mmr|hybrid|similarity`
+    - `X-Doc-Scope: project|external|all`
+    - `X-Retrieval-K: <int>`
 - Env options:
   - `RETRIEVAL_MODE=mmr|hybrid|similarity`
+  - `RETRIEVAL_K=6` (default top-k when no header override is sent)
+  - `DOC_SCOPE=project|external|all`
   - `MMR_FETCH_K=24`, `MMR_LAMBDA=0.5`
   - `HYBRID_FETCH_K=24`, `HYBRID_ALPHA=0.7`
+  - `SIMILARITY_FETCH_K=24`
+  - `IDENTIFIER_FETCH_K=500`, `IDENTIFIER_BOOST=0.2` (for queries like `LLM06`)
 
 Guardrails and safety
 ---------------------
 - Schema validation with GuardrailsAI (fallback to Pydantic)
 - PII redaction (regex-based; best-effort demo)
-- Refuse if missing citations or insufficient context
+- Refuse if missing/invalid citations or insufficient context
 
 Security note
 -------------
@@ -107,7 +120,15 @@ Health checks
 Developer tools
 ---------------
 - Lint: `make lint`
+- Tests (container): `docker compose exec api pytest -q`
+- Tests (host, if deps installed): `make test`
 - Debug API with VS Code: `make debug` and attach to port 5678
+
+Debug endpoints
+---------------
+- `GET /debug/retrieval` (inspect retrieved chunks/scores for a query)
+- `GET /debug/qdrant` (inspect collection samples and payload keys)
+- `GET /debug/langfuse` (check SDK auth wiring)
 
 Demo checklist
 --------------

@@ -25,6 +25,8 @@ ARTIFACT_NOUNS = ("outline", "stories", "assessment", "adr", "decision record")
 
 
 def _is_unknown_answer(text: str) -> bool:
+    """Check whether model output is an unknown/refusal response."""
+
     normalized = " ".join((text or "").strip().split()).lower()
     target = UNKNOWN_ANSWER.rstrip(".").lower()
     return normalized.startswith(target)
@@ -38,6 +40,8 @@ def _run_structured(
     context_query: str,
     agent_meta: dict | None,
 ):
+    """Execute a structured tool using shared configuration from `TOOL_CONFIG`."""
+
     cfg = TOOL_CONFIG[tool_key]
     return generate_structured(
         agent_tool=tool_key,
@@ -55,6 +59,8 @@ def _run_structured(
 
 
 def _is_artifact_request(question: str) -> bool:
+    """Heuristically detect whether a question requests an artifact output."""
+
     q = question.lower()
     if any(term in q for term in ARTIFACT_TERMS):
         return True
@@ -62,6 +68,8 @@ def _is_artifact_request(question: str) -> bool:
 
 
 def answer_question(question: str, agent_meta: dict | None = None):
+    """Answer a general question with retrieval, grounding, and citation checks."""
+
     safe_question = redact_pii(question)
     from app.agent.tools import retrieve_context_with_scores
 
@@ -135,6 +143,8 @@ def generate_adr(
     question_for_context: str,
     agent_meta: dict | None = None,
 ):
+    """Generate an ADR artifact from retrieved context."""
+
     safe_decision = redact_pii(decision)
     safe_alternatives = [redact_pii(a) for a in alternatives]
     safe_context_query = redact_pii(question_for_context)
@@ -155,6 +165,8 @@ def generate_adr(
 
 
 def generate_solution_outline(request: str, context_query: str, agent_meta: dict | None = None):
+    """Generate a solution-outline artifact from retrieved context."""
+
     return _generate_request_artifact(
         "solution_outline",
         request=request,
@@ -164,6 +176,8 @@ def generate_solution_outline(request: str, context_query: str, agent_meta: dict
 
 
 def generate_user_stories(request: str, context_query: str, agent_meta: dict | None = None):
+    """Generate user stories and acceptance criteria from retrieved context."""
+
     return _generate_request_artifact(
         "user_stories",
         request=request,
@@ -173,6 +187,8 @@ def generate_user_stories(request: str, context_query: str, agent_meta: dict | N
 
 
 def generate_risk_assessment(request: str, context_query: str, agent_meta: dict | None = None):
+    """Generate a risk assessment artifact from retrieved context."""
+
     return _generate_request_artifact(
         "risk_assessment",
         request=request,
@@ -188,6 +204,8 @@ def _generate_request_artifact(
     context_query: str,
     agent_meta: dict | None = None,
 ):
+    """Shared helper for request-driven structured artifacts."""
+
     safe_request = redact_pii(request)
     safe_context_query = redact_pii(context_query)
     return _run_structured(
@@ -200,7 +218,8 @@ def _generate_request_artifact(
 
 
 def agent_route(question: str):
-    # Route to best tool using a deterministic call
+    """Route the request to `ask` or a structured artifact tool."""
+
     safe_question = redact_pii(question)
     if not _is_artifact_request(safe_question):
         return answer_question(question)

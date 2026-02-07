@@ -1,17 +1,17 @@
 import json
 from pathlib import Path
 
-from app.agent.router import SYSTEM, _read_prompt
+from app.agent.router_prompts import ROUTER_PROMPT, SYSTEM
 from app.agent.schemas import ToolCall
 from app.llm.models import get_chat_model
 
 DATASET_PATH = Path("app/eval/datasets/router_eval.jsonl")
 OUT_PATH = Path("app/eval/router_eval_results.json")
 
-ROUTER_PROMPT = _read_prompt("tool_router.md")
-
 
 def _load_rows():
+    """Load router-evaluation rows from JSONL dataset."""
+
     rows = []
     for line in DATASET_PATH.read_text(encoding="utf-8").splitlines():
         line = line.strip()
@@ -22,6 +22,8 @@ def _load_rows():
 
 
 def run_eval():
+    """Run router tool-selection evaluation and write result summary JSON."""
+
     rows = _load_rows()
     llm = get_chat_model(temperature=0.0)
 

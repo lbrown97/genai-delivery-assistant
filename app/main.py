@@ -25,15 +25,21 @@ app = FastAPI(title="GenAI Delivery Assistant")
 
 
 class AskRequest(BaseModel):
+    """Request payload for the `/agent` endpoint."""
+
     question: str
 
 
 @app.get("/health")
 def health():
+    """Liveness probe."""
+
     return {"status": "ok"}
 
 
 def _check_required_env():
+    """Return required environment variables that are currently missing."""
+
     required = ["OLLAMA_BASE_URL", "QDRANT_URL"]
     missing = [k for k in required if not os.getenv(k)]
     return missing
@@ -41,6 +47,8 @@ def _check_required_env():
 
 @app.get("/ready")
 def ready():
+    """Readiness probe that checks env config plus Ollama/Qdrant reachability."""
+
     missing = _check_required_env()
     checks = {"env_missing": missing}
 
@@ -65,11 +73,15 @@ def ready():
 
 @app.post("/ingest")
 def ingest_docs():
+    """Ingest files from the project `data/` directory into the vector store."""
+
     return ingest("data")
 
 
 @app.post("/agent")
 def agent(req: AskRequest, request: Request):
+    """Run the agent with optional request-level retrieval overrides."""
+
     mode = request.headers.get("X-Retrieval-Mode")
     scope = request.headers.get("X-Doc-Scope")
     k_raw = request.headers.get("X-Retrieval-K")
@@ -100,6 +112,8 @@ def agent(req: AskRequest, request: Request):
 
 @app.get("/debug/langfuse")
 def debug_langfuse():
+    """Return whether Langfuse SDK auth is configured and reachable."""
+
     pk = os.getenv("LANGFUSE_PUBLIC_KEY")
     sk = os.getenv("LANGFUSE_SECRET_KEY")
     host = os.getenv("LANGFUSE_HOST")
@@ -113,6 +127,8 @@ def debug_langfuse():
 
 @app.get("/debug/qdrant")
 def debug_qdrant(limit: int = 10):
+    """Inspect collection existence and sample payload metadata in Qdrant."""
+
     client = QdrantClient(url=settings.QDRANT_URL)
     collection = settings.QDRANT_COLLECTION
     if not client.collection_exists(collection_name=collection):
@@ -149,6 +165,8 @@ def debug_qdrant(limit: int = 10):
 
 @app.get("/debug/retrieval")
 def debug_retrieval(query: str, k: int = 6, mode: str | None = None, scope: str | None = None):
+    """Return retrieval results and scores for a query with optional overrides."""
+
     if mode:
         set_retrieval_mode_override(mode)
     if scope:
