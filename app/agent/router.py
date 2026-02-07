@@ -1,13 +1,21 @@
 import json
 
-from app.agent.guardrails import groundedness_with_scores, redact_pii, validate_citations
-from app.agent.router_prompts import ANSWER, ROUTER_PROMPT, SYSTEM
-from app.agent.router_utils import generate_structured, lf_config, wrap_response
+from app.agent.guardrails import groundedness_with_scores, redact_pii
+from app.agent.router_prompts import ROUTER_PROMPT
+from app.agent.router_utils import (
+    UNKNOWN_ANSWER,
+    generate_ask_draft,
+    generate_structured,
+    groundedness_min_score,
+    lf_config,
+    normalize_ask_answer,
+    wrap_response,
+)
 from app.agent.schemas import ToolCall
 from app.agent.tool_config import TOOL_CONFIG
+from app.core.env import env_float
 from app.llm.models import get_chat_model
 
-UNKNOWN_ANSWER = "I don't know based on the provided documents."
 ARTIFACT_TERMS = (
     "adr",
     "architecture decision",
@@ -22,14 +30,6 @@ ARTIFACT_TERMS = (
 )
 CREATE_VERBS = ("create", "draft", "write", "generate", "produce", "prepare")
 ARTIFACT_NOUNS = ("outline", "stories", "assessment", "adr", "decision record")
-
-
-def _is_unknown_answer(text: str) -> bool:
-    """Check whether model output is an unknown/refusal response."""
-
-    normalized = " ".join((text or "").strip().split()).lower()
-    target = UNKNOWN_ANSWER.rstrip(".").lower()
-    return normalized.startswith(target)
 
 
 def _run_structured(
@@ -81,7 +81,7 @@ def answer_question(question: str, agent_meta: dict | None = None):
         r.get("scores"),
         min_docs=1,
         min_unique_sources=1,
-        min_score=0.8,
+        min_score=groundedness_min_score(0.8),
     ):
         return wrap_response(
             agent_tool="ask",
@@ -92,39 +92,26 @@ def answer_question(question: str, agent_meta: dict | None = None):
             answer=UNKNOWN_ANSWER,
         )
 
-    llm = get_chat_model(temperature=0.2)
-    source_ids = [s.get("source_id", "") for s in r["sources"] if s.get("source_id")]
-    allowed_sources_block = "\n".join(f"- [{sid}]" for sid in source_ids)
-    prompt = (
-        f"{SYSTEM}\n\n"
-        + ANSWER.format(context=r["context"], question=safe_question)
-        + "\n\nAllowed source_ids for citations (use only these):\n"
-        + (allowed_sources_block or "- (none)")
-    )
-
     cfg = lf_config(
         tags=["use_case:ask"],
         metadata={"customer": "demo", "retrieved_docs": len(docs)},
         extra_meta=agent_meta,
     )
-    msg = llm.invoke(prompt, config=cfg)
-    answer_text = msg.content
+    draft = generate_ask_draft(
+        question,
+        context=r["context"],
+        sources=r["sources"],
+        temperature=env_float("ASK_TEMPERATURE", 0.1),
+        config=cfg,
+    )
+    answer_text, error = normalize_ask_answer(draft, r["sources"])
 
-    if _is_unknown_answer(answer_text):
+    if error:
         return wrap_response(
             agent_tool="ask",
             agent_args={"question": safe_question},
             sources=r["sources"],
-            answer=UNKNOWN_ANSWER,
-        )
-
-    allowed_ids = {s.get("source_id", "") for s in r["sources"]}
-    if not validate_citations(answer_text, allowed_source_ids=allowed_ids):
-        return wrap_response(
-            agent_tool="ask",
-            agent_args={"question": safe_question},
-            sources=r["sources"],
-            error="citation_validation_failed",
+            error=error,
             message="Model output did not cite retrieved sources in an acceptable format.",
             answer=UNKNOWN_ANSWER,
         )
@@ -217,12 +204,12 @@ def _generate_request_artifact(
     )
 
 
-def agent_route(question: str):
-    """Route the request to `ask` or a structured artifact tool."""
+def select_tool_call(question: str) -> ToolCall:
+    """Select a tool call using the same logic as the production router path."""
 
     safe_question = redact_pii(question)
     if not _is_artifact_request(safe_question):
-        return answer_question(question)
+        return ToolCall(tool="ask", args={"question": safe_question})
 
     llm = get_chat_model(temperature=0.0)
     prompt = ROUTER_PROMPT.format(question=safe_question)
@@ -232,12 +219,22 @@ def agent_route(question: str):
     )
     msg = llm.invoke(prompt, config=cfg)
 
-    call = ToolCall.model_validate_json(msg.content)
+    try:
+        return ToolCall.model_validate_json(msg.content)
+    except Exception:
+        return ToolCall(tool="ask", args={"question": safe_question})
 
+
+def agent_route(question: str):
+    """Route the request to `ask` or a structured artifact tool."""
+
+    call = select_tool_call(question)
     tool = call.tool
     args = call.args or {}
 
     agent_meta = {"router_tool": tool, "router_args": args}
+    if tool == "ask":
+        return answer_question(question, agent_meta=agent_meta)
 
     handlers = {
         "adr": lambda: generate_adr(

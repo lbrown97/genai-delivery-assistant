@@ -164,7 +164,12 @@ def debug_qdrant(limit: int = 10):
 
 
 @app.get("/debug/retrieval")
-def debug_retrieval(query: str, k: int = 6, mode: str | None = None, scope: str | None = None):
+def debug_retrieval(
+    query: str,
+    k: int | None = None,
+    mode: str | None = None,
+    scope: str | None = None,
+):
     """Return retrieval results and scores for a query with optional overrides."""
 
     if mode:

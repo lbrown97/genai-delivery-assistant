@@ -1,9 +1,7 @@
 import json
 from pathlib import Path
 
-from app.agent.router_prompts import ROUTER_PROMPT, SYSTEM
-from app.agent.schemas import ToolCall
-from app.llm.models import get_chat_model
+from app.agent.router import select_tool_call
 
 DATASET_PATH = Path("app/eval/datasets/router_eval.jsonl")
 OUT_PATH = Path("app/eval/router_eval_results.json")
@@ -25,17 +23,14 @@ def run_eval():
     """Run router tool-selection evaluation and write result summary JSON."""
 
     rows = _load_rows()
-    llm = get_chat_model(temperature=0.0)
 
     results = []
     correct = 0
     for r in rows:
         question = r["question"]
         expected = r["expected_tool"]
-        prompt = f"{SYSTEM}\n\n" + ROUTER_PROMPT.format(question=question)
-        msg = llm.invoke(prompt)
         try:
-            call = ToolCall.model_validate_json(msg.content)
+            call = select_tool_call(question)
             predicted = call.tool
         except Exception:
             predicted = "invalid"

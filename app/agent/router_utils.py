@@ -3,11 +3,27 @@ from app.agent.guardrails import (
     parse_with_guardrails,
     redact_pii,
     redact_pii_any,
+    validate_citations,
 )
-from app.agent.router_prompts import SYSTEM
+from app.agent.router_prompts import ANSWER, SYSTEM
 from app.agent.tools import retrieve_context_with_scores
+from app.core.env import env_float
 from app.core.observability import get_langfuse_handler
 from app.llm.models import get_chat_model
+from app.rag.retriever import get_active_doc_scope
+
+UNKNOWN_ANSWER = "I don't know based on the provided documents."
+
+
+def groundedness_min_score(default: float) -> float:
+    """Resolve min-score threshold by active doc scope for stable demo behavior."""
+
+    scope = get_active_doc_scope()
+    if scope == "project":
+        return env_float("GROUNDEDNESS_MIN_SCORE_PROJECT", 0.65)
+    if scope == "external":
+        return env_float("GROUNDEDNESS_MIN_SCORE_EXTERNAL", 0.8)
+    return env_float("GROUNDEDNESS_MIN_SCORE_ALL", default)
 
 
 def lf_config(tags: list[str], metadata: dict, extra_meta: dict | None = None):
@@ -65,12 +81,13 @@ def retrieve_context(
 
     r = retrieve_context_with_scores(context_query)
     docs = r["docs"]
+    min_score = groundedness_min_score(gate["min_score"])
     if not groundedness_with_scores(
         docs,
         r.get("scores"),
         min_docs=gate["min_docs"],
         min_unique_sources=gate.get("min_unique_sources", 1),
-        min_score=gate["min_score"],
+        min_score=min_score,
     ):
         return None, wrap_response(
             agent_tool=agent_tool,
@@ -133,3 +150,57 @@ def generate_structured(
         sources=r["sources"],
         structured=obj.model_dump(),
     )
+
+
+def is_unknown_answer(text: str) -> bool:
+    """Check whether model output starts with the canonical unknown answer."""
+
+    normalized = " ".join((text or "").strip().split()).lower()
+    target = UNKNOWN_ANSWER.rstrip(".").lower()
+    return normalized.startswith(target)
+
+
+def build_answer_prompt(context: str, safe_question: str, source_ids: list[str]) -> str:
+    """Build ask-mode prompt with explicit source allowlist for citations."""
+
+    allowed_sources_block = "\n".join(f"- [{sid}]" for sid in source_ids)
+    return (
+        f"{SYSTEM}\n\n"
+        + ANSWER.format(context=context, question=safe_question)
+        + "\n\nAllowed source_ids for citations (use only these):\n"
+        + (allowed_sources_block or "- (none)")
+    )
+
+
+def generate_ask_draft(
+    question: str,
+    *,
+    context: str,
+    sources: list[dict],
+    temperature: float,
+    config: dict | None = None,
+) -> str:
+    """Generate a raw ask-mode draft answer using the shared app prompt."""
+
+    safe_question = redact_pii(question)
+    source_ids = [s.get("source_id", "") for s in sources if s.get("source_id")]
+    prompt = build_answer_prompt(context, safe_question, source_ids)
+    llm = get_chat_model(temperature=temperature)
+    if config:
+        msg = llm.invoke(prompt, config=config)
+    else:
+        msg = llm.invoke(prompt)
+    return msg.content
+
+
+def normalize_ask_answer(answer_text: str, sources: list[dict]) -> tuple[str, str | None]:
+    """Normalize ask-mode answer and validate citations against retrieved sources."""
+
+    if is_unknown_answer(answer_text):
+        return UNKNOWN_ANSWER, None
+
+    allowed_ids = {s.get("source_id", "") for s in sources}
+    if not validate_citations(answer_text, allowed_source_ids=allowed_ids):
+        return UNKNOWN_ANSWER, "citation_validation_failed"
+
+    return answer_text, None
