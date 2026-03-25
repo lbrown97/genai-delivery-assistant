@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     """Centralized environment-backed runtime settings."""
 
     OLLAMA_BASE_URL: str = "http://ollama:11434"
-    OLLAMA_MODEL: str = "qwen2.5:14b-instruct"
+    OLLAMA_MODEL: str = "qwen3.5:9b"
 
     QDRANT_URL: str = "http://qdrant:6333"
     QDRANT_COLLECTION: str = "delivery_docs"

@@ -134,7 +134,7 @@ def generate_structured(
         return fail
 
     r, docs = retrieved
-    llm = get_chat_model(temperature=temperature)
+    llm = get_chat_model(temperature=temperature, format="json")
     prompt = f"{SYSTEM}\n\n" + prompt_template.format(context=r["context"], **format_kwargs)
     cfg = lf_config(
         tags=tags,
@@ -142,7 +142,25 @@ def generate_structured(
         extra_meta=agent_meta,
     )
     msg = llm.invoke(prompt, config=cfg)
-    obj = parse_with_guardrails(model_cls, msg.content)
+    raw = (msg.content or "").strip()
+    if not raw:
+        return wrap_response(
+            agent_tool=agent_tool,
+            agent_args=agent_args,
+            sources=r["sources"],
+            error="empty_model_output",
+            message="Model returned an empty structured response.",
+        )
+    try:
+        obj = parse_with_guardrails(model_cls, raw)
+    except Exception:
+        return wrap_response(
+            agent_tool=agent_tool,
+            agent_args=agent_args,
+            sources=r["sources"],
+            error="invalid_structured_output",
+            message="Model output was not valid structured JSON.",
+        )
     obj = finalize_sources(obj, docs)
     return wrap_response(
         agent_tool=agent_tool,

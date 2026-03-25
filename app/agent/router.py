@@ -211,7 +211,7 @@ def select_tool_call(question: str) -> ToolCall:
     if not _is_artifact_request(safe_question):
         return ToolCall(tool="ask", args={"question": safe_question})
 
-    llm = get_chat_model(temperature=0.0)
+    llm = get_chat_model(temperature=0.0, format="json")
     prompt = ROUTER_PROMPT.format(question=safe_question)
     cfg = lf_config(
         tags=["use_case:router"],
