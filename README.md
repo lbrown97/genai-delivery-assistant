@@ -59,6 +59,7 @@ Quickstart
    curl -X POST http://localhost:8000/ingest
    ```
    - Or, after opening the UI, click `Ingest /data` in the sidebar.
+   - Re-ingesting the same source files replaces their existing chunks instead of duplicating them.
 5) Open UI:
    - http://localhost:8501
 6) Try sample questions:
